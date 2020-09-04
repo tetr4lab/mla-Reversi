@@ -55,7 +55,7 @@ namespace ReversiGame {
 
 		/// <summary>マスのクリック</summary>
 		public void OnPointerClick (PointerEventData eventData) {
-			if (game.HumanTurn) { game.Move (index); }
+			if (game.HumanTurn && !game.TurnAgent) { game.Move (index); }
 		}
 
 	}

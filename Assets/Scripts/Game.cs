@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#define DEBUGLOG
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using ReversiLogic;
@@ -93,6 +94,16 @@ namespace ReversiGame {
 		/// <summary>人間と機械の入れ替え</summary>
 		public bool ChangeActors () => blackAgent.ChangeActor () && whiteAgent.ChangeActor ();
 
+		/// <summary>チームの入れ替え</summary>
+		public bool ChangeAgents () {
+			if (blackAgent.ChangeTeam () && whiteAgent.ChangeTeam ()) {
+				Debug.Log ($"Agents Changed");
+				detectAgents ();
+				return true;
+			}
+			return false;
+		}
+
 		/// <summary>論理ゲーム</summary>
 		public Reversi Reversi {
 			get {
@@ -105,6 +116,7 @@ namespace ReversiGame {
 
 		/// <summary>物理盤面</summary>
 		private BoardObject board = null;
+		private ReversiAgent [] agents = null;
 		/// <summary>黒のエージェント</summary>
 		private ReversiAgent blackAgent = null;
 		/// <summary>白のエージェント</summary>
@@ -112,16 +124,26 @@ namespace ReversiGame {
 
 		#endregion
 
+		/// <summary>エージェントの検出</summary>
+		private void detectAgents () {
+			if (agents == null) {
+				agents = GetComponentsInChildren<ReversiAgent> ();
+				foreach (var agent in agents) { agent.Init (); }
+			}
+			foreach (var agent in agents) {
+				if (agent.IsBlack) {
+					blackAgent = agent;
+				} else if (agent.IsWhite) {
+					whiteAgent = agent;
+				}
+			}
+			Debug.Log ($"Agents Detected blackAgentId={blackAgent?.TeamId}, whiteAgentId={whiteAgent?.TeamId}");
+		}
+
 		/// <summary>初期化</summary>
 		private void init () {
 			if (reversi == null) {
-				foreach (var agent in GetComponentsInChildren<ReversiAgent> ()) {
-					if (agent.name.StartsWith ("Black")) {
-						blackAgent = agent;
-					} else if (agent.name.StartsWith ("White")) {
-						whiteAgent = agent;
-					}
-				}
+				detectAgents ();
 				Reversi = new Reversi ();
 				ColorScore = (0, 0);
 				board = BoardObject.Create (transform, this);
@@ -200,21 +222,6 @@ namespace ReversiGame {
 			}
 		}
 
-		/// <summary>表示更新要求</summary>
-		//public void RequestUpdate () => board.RequestUpdate ();
-
-		/// <summary>再初期化要求</summary>
-		//public void ResetRequest () {
-		//	Debug.Log ($"GameResetRequested ({((State == GameState.Reset) ? "already" : "first")}): step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
-		//	State = GameState.Reset;
-		//}
-
-		/// <summary>終局処理要求</summary>
-		//public void RequestEnding () {
-		//	Debug.Log ($"EndingRequested ({((State == GameState.Ending) ? "already" : "first")}): step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
-		//	if (State != GameState.Ending) { State = GameState.End; }
-		//}
-
 		/// <summary>駆動</summary>
 		private void Update () {
 			if (TurnAgent) { return; } // 要求受付待機中
@@ -230,14 +237,15 @@ namespace ReversiGame {
 						if (!Confirm.OnMode) {
 							Confirm.Create ( // リセットダイアログ
 								transform.parent,
-								$"<size=64>{(HumanWin ? "You Win" : MachineWin ? "You Lose" : "Draw")}</size>",
-								"Change", () => ChangeActors (),
+								HumanVsMachine ? $"<size=64>{(HumanWin ? "You Win" : MachineWin ? "You Lose" : "Draw")}</size>" : $"<size=64>{(reversi.BlackWin ? "Black Win" : reversi.WhiteWin ? "White Win" : "Draw")}</size>",
+								"Change", () => ChangeAgents (),
 								"Continue", null,
 								() => { State = GameState.Reset; }
 							);
 						}
 						State = GameState.Confirm;
 					} else {
+						if (MachineOnly) { ChangeAgents (); }
 						State = GameState.Reset;
 					}
 					if (blackAgent.IsMachine) { blackAgent.OnEnd (); }
@@ -267,11 +275,11 @@ namespace ReversiGame {
 
 	/// <summary>ゲーム状態</summary>
 	public enum GameState {
-		NotReady = 0,
-		Play,
-		End,
-		Confirm,
-		Reset,
+		NotReady = 0, // 初期化待機中
+		Play, // プレイ進行中
+		End, // 終局処理要求
+		Confirm, // 確認待機中
+		Reset, // 初期化要求
 	}
 
 	/// <summary>Debugのラッパー (DEBUGLOG未定義時にコードを無効化する)</summary>
