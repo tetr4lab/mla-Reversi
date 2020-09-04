@@ -1,7 +1,7 @@
-﻿//#define DEBUGLOG
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using ReversiLogic;
 
 namespace ReversiGame {
@@ -69,6 +69,8 @@ namespace ReversiGame {
 		public bool Enable (int index) => Reversi.Enable (index);
 		/// <summary>決定要求中のエージェント</summary>
 		public ReversiAgent TurnAgent = null;
+		/// <summary>機械学習時の先手・後手入れ替え</summary>
+		public bool ChangeFirst = false;
 
 		/// <summary>黒は人間</summary>
 		public bool BlackHuman {
@@ -142,11 +144,22 @@ namespace ReversiGame {
 
 		/// <summary>初期化</summary>
 		private void init () {
-			if (reversi == null) {
+			if (State == GameState.NotReady) {
+				foreach (var arg in System.Environment.GetCommandLineArgs ()) {
+					switch (arg.ToLower ()) {
+						case "-changefirst":
+							ChangeFirst = true;
+							break;
+						case "-no_changefirst":
+							ChangeFirst = false;
+							break;
+					}
+				}
 				detectAgents ();
 				Reversi = new Reversi ();
 				ColorScore = (0, 0);
 				board = BoardObject.Create (transform, this);
+				Resources.UnloadUnusedAssets ();
 				if (HumanVsMachine) {
 					Confirm.Create ( // 攻守選択ダイアログ
 						transform.parent,
@@ -245,7 +258,7 @@ namespace ReversiGame {
 						}
 						State = GameState.Confirm;
 					} else {
-						if (MachineOnly) { ChangeAgents (); }
+						if (ChangeFirst && MachineOnly) { ChangeAgents (); }
 						State = GameState.Reset;
 					}
 					if (blackAgent.IsMachine) { blackAgent.OnEnd (); }
@@ -258,7 +271,8 @@ namespace ReversiGame {
 				case GameState.Play: // プレイ進行中
 					if (IsEnd) { // 終局を検出
 						State = GameState.End;
-					} if (BlackMachine && IsBlackTurn && BlackEnable) { // 黒機械の手番
+					}
+					if (BlackMachine && IsBlackTurn && BlackEnable) { // 黒機械の手番
 						Debug.Log ($"BlackAgent.RequestDecision step={Step}, turn={(IsBlackTurn ? "Black" : "White")}, status={Score.status}");
 						TurnAgent = blackAgent;
 						TurnAgent.RequestDecision ();
@@ -281,49 +295,5 @@ namespace ReversiGame {
 		Confirm, // 確認待機中
 		Reset, // 初期化要求
 	}
-
-	/// <summary>Debugのラッパー (DEBUGLOG未定義時にコードを無効化する)</summary>
-#if !DEBUGLOG
-	public class Debug {
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void Assert (bool condition, string message, Object context) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void Assert (bool condition, object message, Object context) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void Assert (bool condition, string message) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void Assert (bool condition, object message) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void Assert (bool condition, Object context) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void Assert (bool condition) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void Assert (bool condition, string format, params object [] args) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void AssertFormat (bool condition, string format, params object [] args) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void AssertFormat (bool condition, Object context, string format, params object [] args) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void Break () { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void ClearDeveloperConsole () { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void DebugBreak () { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void DrawLine (Vector3 start, Vector3 end, Color color, float duration, bool depthTest) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void DrawLine (Vector3 start, Vector3 end, Color color, float duration) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void DrawLine (Vector3 start, Vector3 end) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void DrawLine (Vector3 start, Vector3 end, Color color) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void DrawRay (Vector3 start, Vector3 dir, Color color, float duration) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void DrawRay (Vector3 start, Vector3 dir, Color color, float duration, bool depthTest) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void DrawRay (Vector3 start, Vector3 dir) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void DrawRay (Vector3 start, Vector3 dir, Color color) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void Log (object message) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void Log (object message, Object context) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogAssertion (object message, Object context) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogAssertion (object message) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogAssertionFormat (Object context, string format, params object [] args) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogAssertionFormat (string format, params object [] args) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogError (object message, Object context) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogError (object message) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogErrorFormat (string format, params object [] args) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogErrorFormat (Object context, string format, params object [] args) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogException (System.Exception exception, Object context) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogException (System.Exception exception) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogFormat (Object context, string format, params object [] args) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogFormat (string format, params object [] args) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogWarning (object message) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogWarning (object message, Object context) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogWarningFormat (string format, params object [] args) { }
-		[System.Diagnostics.Conditional ("DEBUGLOG")] public static void LogWarningFormat (Object context, string format, params object [] args) { }
-	}
-#endif
 
 }
