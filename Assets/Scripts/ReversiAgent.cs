@@ -40,6 +40,12 @@ namespace ReversiGame {
 		/// <summary>自分が劣勢</summary>
 		public bool ILoser => (Team == TeamColor.Black && reversi.WhiteWin) || (Team == TeamColor.White && reversi.BlackWin);
 
+		/// <summary>挙動タイプ</summary>
+		public BehaviorType BehaviorType {
+			get => Parameters.BehaviorType;
+			set => Parameters.BehaviorType = value;
+		}
+
 		/// <summary>人間が操作</summary>
 		public bool IsHuman {
 			get => (Parameters.BehaviorType == BehaviorType.HeuristicOnly);

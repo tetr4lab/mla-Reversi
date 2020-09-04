@@ -280,10 +280,10 @@ namespace ReversiLogic {
 				}
 			}
 			var halfIndex = Size / 2 - 1;
-			matrix [halfIndex, halfIndex].Black = true;
-			matrix [halfIndex, halfIndex + 1].White = true;
-			matrix [halfIndex + 1, halfIndex].White = true;
-			matrix [halfIndex + 1, halfIndex + 1].Black = true;
+			matrix [halfIndex, halfIndex].White = true;
+			matrix [halfIndex, halfIndex + 1].Black = true;
+			matrix [halfIndex + 1, halfIndex].Black = true;
+			matrix [halfIndex + 1, halfIndex + 1].White = true;
 			dirty = true;
 		}
 

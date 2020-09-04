@@ -1,41 +1,44 @@
 ﻿//#define DEBUGLOG // ログの出力
 //#define TRAINER // トレーナー
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using Unity.MLAgents.Policies;
 
 namespace ReversiGame {
 
-	/// <summary>シーンローダー</summary>
+	/// <summary>ローダー</summary>
 	public class Loader : MonoBehaviour {
 
+		public const int TRAINER_WIDTH = 7;
+		public const int TRAINER_HEIGHT = 7;
+
 		private void Awake () {
-			var scene = SceneManager.GetActiveScene ();
-			if (scene.name == "Loader") {
-				var player = true;
+			var player = true;
 #if TRAINER
-				foreach (var arg in new [] { "-trainer", }) {
+			foreach (var arg in new [] { "-trainer", }) {
 #else
-				foreach (var arg in System.Environment.GetCommandLineArgs ()) {
+			foreach (var arg in System.Environment.GetCommandLineArgs ()) {
 #endif
 
-					switch (arg.ToLower ()) {
-						case "-trainer":
-							player = false;
-							break;
-						case "-player":
-							player = true;
-							break;
-					}
-					if (player) {
-						SceneManager.LoadScene ("Scenes/Reversi");
-					} else {
-						SceneManager.LoadScene ("Scenes/ReversiTrainer");
-					}
-					SceneManager.UnloadSceneAsync (scene);
+				switch (arg.ToLower ()) {
+					case "-trainer":
+						player = false;
+						break;
+					case "-player":
+						player = true;
+						break;
 				}
 			}
+			var center = new Vector3 (Screen.width / 2f, Screen.height / 2f, 0f);
+			if (player) {
+				Game.Create (transform.parent, center, BehaviorType.HeuristicOnly, BehaviorType.InferenceOnly);
+			} else {
+				for (var i = 0; i < TRAINER_HEIGHT; i++) {
+					for (var j = 0; j < TRAINER_WIDTH; j++) {
+						Game.Create (transform.parent, center + new Vector3 (Screen.width * j, Screen.height * i, 0f));
+					}
+				}
+			}
+			Destroy (gameObject, 0.016f);
 		}
 
 	}
