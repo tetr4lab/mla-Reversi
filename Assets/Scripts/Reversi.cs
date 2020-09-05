@@ -70,7 +70,7 @@ namespace ReversiLogic {
 		// <summary>石を置いてターンを切り替え</summary>
 		public void Move (int i, int j) {
 			if (Enable (i, j)) {
-				board.Move (i, j, IsBlackTurn);
+				board.Move (i, j, IsBlackTurn, Step + 1);
 				LastMove = (i, j);
 				Step++;
 			} else { // 置けない場所に置こうとした
@@ -161,9 +161,9 @@ namespace ReversiLogic {
 						for (var j = 0; j < Size; j++) {
 							var s = getSquareStatus (i, j);
 							squareStatuses [i, j] = s ?? SquareStatus.Empty;
-							if (s.Black ()) {
+							if (s.IsBlack ()) {
 								blackScore++;
-							} else if (s.White ()) {
+							} else if (s.IsWhite ()) {
 								whiteScore++;
 							} else {
 								if (s.BlackEnable ()) {
@@ -190,7 +190,7 @@ namespace ReversiLogic {
 		/// <summary>指定方向に異なる石が現れるまでスキャンする</summary>
 		private SquareStatus scanStone (int i, int j, int di, int dj) {
 			var status = this [i + di, j + dj]?.Status;
-			if (status.NotEmpty ()) {
+			if (status.IsNotEmpty ()) {
 				var opposite = scanStoneSub (i + di, j + dj, di, dj, status);
 				if (status.Different (opposite)) {
 					return opposite.Enabler () ?? SquareStatus.Empty;
@@ -236,10 +236,10 @@ namespace ReversiLogic {
 		}
 
 		/// <summary>石を置いて反映する</summary>
-		public void Move (int i, int j, bool black) {
+		public void Move (int i, int j, bool black, int step) {
 			var square = this [i, j];
 			if (square.Status == SquareStatus.Empty) {
-				square.Black = black;
+				square.EnBlack (black, step);
 				scanReverse (i, j, -1, -1, black);
 				scanReverse (i, j, -1, 0, black);
 				scanReverse (i, j, -1, 1, black);
@@ -254,8 +254,8 @@ namespace ReversiLogic {
 		}
 
 		/// <summary>石を置いて反映する</summary>
-		public void Move (int index, bool black) {
-			Move (index / Size, index % Size, black);
+		public void Move (int index, bool black, int step) {
+			Move (index / Size, index % Size, black, step);
 		}
 
 		/// <summary>コンストラクタ</summary>
@@ -275,15 +275,15 @@ namespace ReversiLogic {
 			if (init) {
 				for (var i = 0; i < Size; i++) {
 					for (var j = 0; j < Size; j++) {
-						matrix [i, j].Empty = true;
+						matrix [i, j].IsEmpty = true;
 					}
 				}
 			}
 			var halfIndex = Size / 2 - 1;
-			matrix [halfIndex, halfIndex].White = true;
-			matrix [halfIndex, halfIndex + 1].Black = true;
-			matrix [halfIndex + 1, halfIndex].Black = true;
-			matrix [halfIndex + 1, halfIndex + 1].White = true;
+			matrix [halfIndex, halfIndex].EnWhite ();
+			matrix [halfIndex, halfIndex + 1].EnBlack ();
+			matrix [halfIndex + 1, halfIndex].EnBlack ();
+			matrix [halfIndex + 1, halfIndex + 1].EnWhite ();
 			dirty = true;
 		}
 
@@ -320,28 +320,34 @@ namespace ReversiLogic {
 	public static class SquareStatusExtentions {
 
 		/// <summary>黒石が存在</summary>
-		public static bool Black (this SquareStatus? status) => status == SquareStatus.BlackExist;
+		public static bool IsBlack (this SquareStatus? status) => status == SquareStatus.BlackExist;
 
 		/// <summary>白石が存在</summary>
-		public static bool White (this SquareStatus? status) => status == SquareStatus.WhiteExist;
+		public static bool IsWhite (this SquareStatus? status) => status == SquareStatus.WhiteExist;
 
 		/// <summary>双方に色の異なる石が存在</summary>
-		public static bool Different (this SquareStatus? a, SquareStatus? b) => a.NotEmpty () && b.NotEmpty () && ((a ^ b) & SquareStatus.ExistColor) == SquareStatus.ExistColor;
+		public static bool Different (this SquareStatus? a, SquareStatus? b) => a.IsNotEmpty () && b.IsNotEmpty () && ((a ^ b) & SquareStatus.ExistColor) == SquareStatus.ExistColor;
 
 		/// <summary>石が存在</summary>
 		public static bool Exist (this SquareStatus? status, bool black) => status == (black ? SquareStatus.BlackExist : SquareStatus.WhiteExist);
 
 		/// <summary>石が不存</summary>
-		public static bool Empty (this SquareStatus? status) => (status & SquareStatus.NotEmpty) != SquareStatus.NotEmpty;
+		public static bool IsEmpty (this SquareStatus? status) => (status & SquareStatus.NotEmpty) != SquareStatus.NotEmpty;
 
 		/// <summary>石が存在</summary>
-		public static bool NotEmpty (this SquareStatus? status) => (status & SquareStatus.NotEmpty) == SquareStatus.NotEmpty;
+		public static bool IsNotEmpty (this SquareStatus? status) => (status & SquareStatus.NotEmpty) == SquareStatus.NotEmpty;
 
 		/// <summary>黒石が設置可</summary>
 		public static bool BlackEnable (this SquareStatus? status) => (status & SquareStatus.BlackEnable) == SquareStatus.BlackEnable;
 
 		/// <summary>白石が設置可</summary>
 		public static bool WhiteEnable (this SquareStatus? status) => (status & SquareStatus.WhiteEnable) == SquareStatus.WhiteEnable;
+
+		/// <summary>どちらでも設置可</summary>
+		public static bool BothEnable (this SquareStatus? status) => BlackEnable (status) && WhiteEnable (status);
+
+		/// <summary>何も置けない</summary>
+		public static bool NotEnable (this SquareStatus? status) => !BlackEnable (status) && !WhiteEnable (status);
 
 		/// <summary>石の所在を可能性として返す</summary>
 		public static SquareStatus? Enabler (this SquareStatus? status) {
@@ -362,29 +368,41 @@ namespace ReversiLogic {
 		/// <summary>基礎状態</summary>
 		public SquareStatus? Status { get; private set; }
 
+		/// <summary>石が置かれたステップ</summary>
+		public int Step { get; private set; }
+
 		/// <summary>石が不在</summary>
-		public bool Empty {
+		public bool IsEmpty {
 			get => (Status & SquareStatus.NotEmpty) != SquareStatus.NotEmpty;
-			set { Status = value ? SquareStatus.Empty : SquareStatus.NotEmpty; }
+			set {
+				Status = value ? SquareStatus.Empty : SquareStatus.NotEmpty;
+				Step = -1;
+			}
 		}
 
 		/// <summary>石が存在</summary>
-		public bool NotEmpty {
+		public bool IsNotEmpty {
 			get => (Status & SquareStatus.NotEmpty) == SquareStatus.NotEmpty;
-			set { Status = value ? SquareStatus.NotEmpty : SquareStatus.Empty; }
+			set {
+				Status = value ? SquareStatus.NotEmpty : SquareStatus.Empty;
+				Step = -1;
+			}
 		}
 
 		/// <summary>黒石の所在</summary>
-		public bool Black {
-			get => Status == SquareStatus.BlackExist;
-			set { Status = value ? SquareStatus.BlackExist : SquareStatus.WhiteExist; }
+		public bool IsBlack => Status == SquareStatus.BlackExist;
+
+		/// <summary>黒石の設置</summary>
+		public void EnBlack (bool black = true, int step = -1) {
+			if (IsEmpty) { Step = step; }
+			Status = black ? SquareStatus.BlackExist : SquareStatus.WhiteExist;
 		}
 
 		/// <summary>白石の所在</summary>
-		public bool White {
-			get => Status == SquareStatus.WhiteExist;
-			set { Status = value ? SquareStatus.WhiteExist : SquareStatus.BlackExist; }
-		}
+		public bool IsWhite => Status == SquareStatus.WhiteExist;
+
+		/// <summary>白石の設置</summary>
+		public void EnWhite (bool white = true, int step = -1) => EnBlack (!white, step);
 
 		/// <summary>石を裏返す</summary>
 		public void Reverse () {
@@ -401,11 +419,12 @@ namespace ReversiLogic {
 		/// <summary>コンストラクタ</summary>
 		public Square () {
 			Status = SquareStatus.Empty;
+			Step = -1;
 		}
 
 		/// <summary>文字列化</summary>
 		public override string ToString () {
-			return Black ? "●" : White ? "○" : "・";
+			return IsBlack ? "●" : IsWhite ? "○" : "・";
 		}
 
 	}

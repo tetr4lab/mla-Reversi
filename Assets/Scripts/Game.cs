@@ -82,11 +82,13 @@ namespace ReversiGame {
 		/// <summary>人間対機械時の機械の優勢</summary>
 		public bool MachineWin => HumanScore < MachineScore;
 		/// <summary>マスの取得</summary>
-		public ReversiLogic.Square this [int index] => Reversi [index];
+		public Square this [int index] => Reversi [index];
+		/// <summary>マスの状態</summary>
+		public SquareStatus? SquareStatus (int index) => Reversi.Status (index);
 		/// <summary>手番の石が置けるか</summary>
 		public bool Enable (int index) => Reversi.Enable (index);
 		/// <summary>決定要求中のエージェント</summary>
-		public ReversiAgent TurnAgent = null;
+		[HideInInspector] public ReversiAgent TurnAgent = null;
 
 		/// <summary>黒は人間</summary>
 		public bool BlackHuman {

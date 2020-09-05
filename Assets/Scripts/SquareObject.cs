@@ -35,6 +35,8 @@ namespace ReversiGame {
 		private int index;
 		/// <summary>石の表示アニメ</summary>
 		private Animator animator;
+		/// <summary>ステップ表示</summary>
+		private Text stepText;
 
 		/// <summary>初期化</summary>
 		private void initialize (Transform parent, Game game, int index) {
@@ -42,14 +44,18 @@ namespace ReversiGame {
 			this.game = game;
 			this.index = index;
 			animator = GetComponentInChildren<Animator> ();
+			stepText = GetComponentInChildren<Text> ();
 		}
 
 		/// <summary>表示更新要求</summary>
 		public void RequestUpdate () {
 			if (animator) {
-				var status = game [index].Status;
-				animator.SetBool ("NotEmpty", status.NotEmpty ());
-				animator.SetBool ("Black", status.Black ());
+				var status = game.SquareStatus (index);
+				animator.SetInteger ("Enable", !BoardObject.AllowDisplayHint ? 0 : status.BothEnable () ? 3 : status.BlackEnable () ? 1 : status.WhiteEnable () ? 2 : 0);
+				var square = game [index];
+				animator.SetBool ("NotEmpty", square.IsNotEmpty);
+				animator.SetBool ("Black", square.IsBlack);
+				stepText.text = (!BoardObject.AllowDisplayHint || square.Step < 0) ? "" : $"<color={(square.IsBlack ? "white" : "black")}>{square.Step}</color>";
 			}
 		}
 

@@ -12,7 +12,8 @@ namespace ReversiGame {
 		#region Static
 
 		/// <summary>表示更新可</summary>
-		[HideInInspector] public static bool AllowUpdate = true;
+		public static bool AllowUpdate = true;
+		public static bool AllowDisplayHint = false;
 
 		/// <summary>プレハブのパス</summary>
 		private const string prefabPath = "Prefabs/Board";
@@ -36,7 +37,8 @@ namespace ReversiGame {
 
 		#endregion
 
-		[SerializeField, Tooltip ("表示更新許可切替")] private Toggle allowUpdateToggle = default;
+		[SerializeField, Tooltip ("表示更新許可切替")] private Toggle updateToggle = default;
+		[SerializeField, Tooltip ("手番表示許可切替")] private Toggle hintToggle = default;
 		[SerializeField, Tooltip ("総合得点表示体")] private Text totalScoreText = default;
 		[SerializeField, Tooltip ("得点表示体")] private Text scoreText = default;
 		[SerializeField, Tooltip ("手番表示体")] private Text turnText = default;
@@ -54,8 +56,6 @@ namespace ReversiGame {
 		private void initialize (Transform parent, Game game) {
 			transform.SetAsLastSibling ();
 			this.game = game;
-			allowUpdateToggle.isOn = AllowUpdate = !game.MachineOnly;
-			allowUpdateToggle.gameObject.SetActive (game.MachineOnly);
 			squares = new List<SquareObject> { };
 			for (var i = 0; i < Size * Size; i++) {
 				var square = SquareObject.Create (transform, game, i);
@@ -63,6 +63,10 @@ namespace ReversiGame {
 					squares.Add (square);
 				}
 			}
+			updateToggle.isOn = AllowUpdate = !game.MachineOnly;
+			updateToggle.gameObject.SetActive (game.MachineOnly);
+			hintToggle.isOn = AllowDisplayHint;
+			Debug.Log ("BoardObject intialized");
 			RequestUpdate ();
 		}
 
@@ -84,7 +88,13 @@ namespace ReversiGame {
 		}
 
 		/// <summary>表示更新許可の切り替え</summary>
-		public void OnChangeToggle () => AllowUpdate = allowUpdateToggle.isOn;
+		public void OnChangeUpdateToggle () => AllowUpdate = updateToggle.isOn;
+
+		/// <summary>手番表示許可の切り替え</summary>
+		public void OnChangeStepToggle () {
+			AllowDisplayHint = hintToggle.isOn;
+			RequestUpdate ();
+		}
 
 	}
 

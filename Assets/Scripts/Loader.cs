@@ -1,5 +1,5 @@
 ﻿//#define DEBUGLOG // ログの出力
-//#define TRAINER // トレーナー
+//#define TRAINER_TEST // コマンドライン引数をエディタでテスト
 using UnityEngine;
 using Unity.MLAgents.Policies;
 
@@ -8,23 +8,33 @@ namespace ReversiGame {
 	/// <summary>ローダー</summary>
 	public class Loader : MonoBehaviour {
 
-		public const int TRAINER_WIDTH = 7;
-		public const int TRAINER_HEIGHT = 7;
+		/// <summary>トレーナーの幅</summary>
+		public int TrainerWidth = 7;
+		/// <summary>トレーナーの高さ</summary>
+		public int TrainerHeight = 7;
 
 		private void Awake () {
 			var player = true;
-#if TRAINER
-			foreach (var arg in new [] { "-trainer", }) {
+#if TRAINER_TEST && UNITY_EDITOR
+			var args = new [] { "-trainer", "-width", "4", "-height", "4" };
 #else
-			foreach (var arg in System.Environment.GetCommandLineArgs ()) {
+			var args = System.Environment.GetCommandLineArgs ();
 #endif
+			for (var i = 0; i < args.Length; i++) {
 
-				switch (arg.ToLower ()) {
+				switch (args [i].ToLower ()) {
 					case "-trainer":
 						player = false;
 						break;
-					case "-player":
-						player = true;
+					case "-width":
+						if (++i < args.Length && int.TryParse (args [i], out var width)) {
+							TrainerWidth = width;
+						}
+						break;
+					case "-height":
+						if (++i < args.Length && int.TryParse (args [i], out var height)) {
+							TrainerHeight = height;
+						}
 						break;
 				}
 			}
@@ -32,8 +42,8 @@ namespace ReversiGame {
 			if (player) {
 				Game.Create (transform.parent, center, BehaviorType.HeuristicOnly, BehaviorType.InferenceOnly);
 			} else {
-				for (var i = 0; i < TRAINER_HEIGHT; i++) {
-					for (var j = 0; j < TRAINER_WIDTH; j++) {
+				for (var i = 0; i < TrainerHeight; i++) {
+					for (var j = 0; j < TrainerWidth; j++) {
 						Game.Create (transform.parent, center + new Vector3 (Screen.width * j, Screen.height * i, 0f));
 					}
 				}
