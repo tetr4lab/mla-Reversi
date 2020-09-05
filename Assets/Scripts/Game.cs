@@ -204,7 +204,7 @@ namespace ReversiGame {
 							Confirm.Create ( // リセットダイアログ
 								transform.parent,
 								HumanVsMachine ? $"<size=64>{(HumanWin ? "You Win" : MachineWin ? "You Lose" : "Draw")}</size>" : $"<size=64>{(Reversi.BlackWin ? "Black Win" : Reversi.WhiteWin ? "White Win" : "Draw")}</size>",
-								"Change", () => ChangeAgents (),
+								"Change", () => ChangeActors (),
 								"Continue", null,
 								() => { State = GameState.Reset; }
 							);

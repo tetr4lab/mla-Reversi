@@ -4,14 +4,5 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes:
-  - enabled: 1
-    path: Assets/Scenes/Loader.unity
-    guid: 207218fa59cd5d24391efc1b85daf47f
-  - enabled: 1
-    path: Assets/Scenes/Reversi.unity
-    guid: f99321df474d24c4eb08030abf94cb29
-  - enabled: 1
-    path: Assets/Scenes/ReversiTrainer.unity
-    guid: 9dd730caf793cc044a1778f39effa2de
+  m_Scenes: []
   m_configObjects: {}

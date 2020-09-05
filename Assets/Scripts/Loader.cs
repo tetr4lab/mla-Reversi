@@ -28,7 +28,7 @@ namespace ReversiGame {
 						break;
 				}
 			}
-			var center = new Vector3 (Screen.width / 2f, Screen.height / 2f, 0f);
+			var center = new Vector3 (Screen.width / 2f, Screen.height / 2f);
 			if (player) {
 				Game.Create (transform.parent, center, BehaviorType.HeuristicOnly, BehaviorType.InferenceOnly);
 			} else {

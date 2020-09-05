@@ -36,12 +36,12 @@ namespace ReversiGame {
 
 		#endregion
 
-		[SerializeField, TooltipAttribute ("表示更新許可切替")] private Toggle allowUpdateToggle = default;
-		[SerializeField, TooltipAttribute ("総合得点表示体")] private Text totalScoreText = default;
-		[SerializeField, TooltipAttribute ("得点表示体")] private Text scoreText = default;
-		[SerializeField, TooltipAttribute ("手番表示体")] private Text turnText = default;
-		[SerializeField, TooltipAttribute ("最終手表示体")] private Text lastMoveText = default;
-		[SerializeField, TooltipAttribute ("手数表示体")] private Text stepText = default;
+		[SerializeField, Tooltip ("表示更新許可切替")] private Toggle allowUpdateToggle = default;
+		[SerializeField, Tooltip ("総合得点表示体")] private Text totalScoreText = default;
+		[SerializeField, Tooltip ("得点表示体")] private Text scoreText = default;
+		[SerializeField, Tooltip ("手番表示体")] private Text turnText = default;
+		[SerializeField, Tooltip ("最終手表示体")] private Text lastMoveText = default;
+		[SerializeField, Tooltip ("手数表示体")] private Text stepText = default;
 
 		/// <summary>物理ゲーム</summary>
 		private Game game;
