@@ -1,5 +1,5 @@
-﻿//#define DEBUGLOG // ログの出力
-//#define TRAINER_TEST // コマンドライン引数をエディタでテスト
+﻿//#define DEBUGLOG // ログの出力を有効にします。コメントアウトするとDebug呼び出しがコンパイルされず、ログの出力が抑制されます。
+//#define TRAINER_TEST // トレーナーをエディタで実行できます。(通常はビルドした実行形式でトレーニングします。)
 using UnityEngine;
 using Unity.MLAgents.Policies;
 
@@ -13,6 +13,7 @@ namespace ReversiGame {
 		/// <summary>トレーナーの高さ</summary>
 		public int TrainerHeight = 7;
 
+		/// <summary>プレイヤーまたはトレーナーを起動して自身を消す</summary>
 		private void Awake () {
 			var player = true;
 #if TRAINER_TEST && UNITY_EDITOR

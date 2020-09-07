@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System;
 using UnityEngine;
 using Unity.MLAgents;
@@ -162,6 +161,8 @@ namespace ReversiGame {
 					SetReward (1.0f); // 勝利報酬
 				} else if (ILoser) {
 					SetReward (-1.0f); // 敗北報酬
+				} else {
+					SetReward (0f); // 引き分け報酬
 				}
 				EndEpisode ();
 			} else {
