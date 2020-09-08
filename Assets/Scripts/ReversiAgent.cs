@@ -100,7 +100,7 @@ namespace ReversiGame {
 			if (reversi.Step > 0 && game.State == GameState.Play) { Debug.LogError ("Not Reseted"); }
 		}
 
-		/// <summary>環境の観察</summary>
+		/// <summary>環境の観測</summary>
 		public override void CollectObservations (VectorSensor sensor) {
 			Debug.Log ($"CollectObservations ({Team}): step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
 			for (var i = 0; i < Size * Size; i++) {
