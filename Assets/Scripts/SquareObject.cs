@@ -49,7 +49,8 @@ namespace ReversiGame {
 		public void RequestUpdate () {
 			if (animator) {
 				var status = game.SquareStatus (index);
-				animator.SetInteger ("Enable", !BoardObject.AllowDisplayHint ? 0 : status.BothEnable () ? 3 : status.BlackEnable () ? 1 : status.WhiteEnable () ? 2 : 0);
+				//animator.SetInteger ("Enable", !BoardObject.AllowDisplayHint ? 0 : status.BothEnable () ? 3 : status.BlackEnable () ? 1 : status.WhiteEnable () ? 2 : 0);
+				animator.SetInteger ("Enable", !BoardObject.AllowDisplayHint ? 0 : (game.IsBlackTurn && status.BlackEnable ()) ? 1 : (game.IsWhiteTurn && status.WhiteEnable ()) ? 2 : 0);
 				var square = game [index];
 				animator.SetBool ("NotEmpty", square.IsNotEmpty);
 				animator.SetBool ("Black", square.IsBlack);
