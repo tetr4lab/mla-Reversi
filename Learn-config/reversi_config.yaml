@@ -2,7 +2,7 @@ behaviors:
   Reversi:
     trainer_type: ppo
     hyperparameters:
-      batch_size: 64
+      batch_size: 256
       buffer_size: 20480
       learning_rate: 3e-4
       beta: 5.0e-3
