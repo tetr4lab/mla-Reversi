@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.MLAgents.Policies;
 using ReversiLogic;
@@ -189,6 +190,13 @@ namespace ReversiGame {
 			}
 		}
 
+		/// <summary>決定要求 対人時は遅延要求</summary>
+		private IEnumerator RequestDecision (ReversiAgent agent) {
+			TurnAgent = agent;
+			if (SomeHuman) yield return new WaitForSeconds (0.5f);
+			TurnAgent.RequestDecision ();
+		}
+
 		/// <summary>駆動</summary>
 		private void Update () {
 			if (TurnAgent) { return; } // 要求受付待機中
@@ -227,12 +235,10 @@ namespace ReversiGame {
 					}
 					if (BlackMachine && IsBlackTurn && BlackEnable) { // 黒機械の手番
 						Debug.Log ($"BlackAgent.RequestDecision step={Step}, turn={(IsBlackTurn ? "Black" : "White")}, status={Score.status}");
-						TurnAgent = blackAgent;
-						TurnAgent.RequestDecision ();
+						StartCoroutine (RequestDecision (blackAgent));
 					} else if (WhiteMachine && IsWhiteTurn && WhiteEnable) { // 白機械の手番
 						Debug.Log ($"WhiteAgent.RequestDecision step={Step}, turn={(IsBlackTurn ? "Black" : "White")}, status={Score.status}");
-						TurnAgent = whiteAgent;
-						TurnAgent.RequestDecision ();
+						StartCoroutine (RequestDecision (whiteAgent));
 					}
 					break;
 			}

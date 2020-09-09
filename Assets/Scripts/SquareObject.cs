@@ -54,7 +54,7 @@ namespace ReversiGame {
 				var square = game [index];
 				animator.SetBool ("NotEmpty", square.IsNotEmpty);
 				animator.SetBool ("Black", square.IsBlack);
-				stepText.text = (!BoardObject.AllowDisplayHint || square.Step < 0) ? "" : $"<color={(square.IsBlack ? "white" : "black")}>{square.Step}</color>";
+				stepText.text = (!BoardObject.AllowDisplayHint || square.Step < 0) ? "" : $"<color={((square.Step == game.Step) ? "red" : square.IsBlack ? "white" : "black")}>{square.Step}</color>";
 			}
 		}
 
