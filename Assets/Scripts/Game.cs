@@ -11,6 +11,9 @@ namespace ReversiGame {
 
 		#region Static
 
+		/// <summary>ターンの時間間隔</summary>
+		public const float TurnInterval = 1.0f;
+
 		/// <summary>プレハブのパス</summary>
 		private const string prefabPath = "Prefabs/Game";
 		/// <summary>プレハブ</summary>
@@ -190,10 +193,10 @@ namespace ReversiGame {
 			}
 		}
 
-		/// <summary>決定要求 対人時は遅延要求</summary>
+		/// <summary>決定要求 (対人時は遅延実行)</summary>
 		private IEnumerator RequestDecision (ReversiAgent agent) {
-			TurnAgent = agent;
-			if (SomeHuman) yield return new WaitForSeconds (0.5f);
+			TurnAgent = agent; // 再入しないように要求中にしておく
+			if (SomeHuman) yield return new WaitForSeconds (TurnInterval);
 			TurnAgent.RequestDecision ();
 		}
 
