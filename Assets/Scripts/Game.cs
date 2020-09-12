@@ -20,11 +20,11 @@ namespace ReversiGame {
 		private static GameObject prefab = null;
 
 		/// <summary>生成</summary>
-		public static Game Create (Transform parent, Vector3 position, BehaviorType? blackAgentType = null, BehaviorType? whiteAgentType = null) {
+		public static Game Create (Transform parent, Vector3 position, BehaviorType? blackAgentType = null, BehaviorType? whiteAgentType = null, bool forceChange = false) {
 			if (!prefab) { prefab = Resources.Load<GameObject> (prefabPath); }
 			if (!prefab) { throw new MissingComponentException ($"resources not found '{prefabPath}'"); }
 			var instance = Instantiate (prefab, position, Quaternion.identity, parent)?.GetComponent<Game> ();
-			instance?.initialize (blackAgentType, whiteAgentType);
+			instance?.initialize (blackAgentType, whiteAgentType, forceChange);
 			return instance;
 		}
 
@@ -40,6 +40,8 @@ namespace ReversiGame {
 			}
 		}
 		private GameState state = GameState.NotReady;
+		/// <summary>機械対機械時、強制的に先手後手を入れ替える</summary>
+		public bool ForceChange;
 		/// <summary>ステップ</summary>
 		public int Step => Reversi.Step;
 		/// <summary>最後の手</summary>
@@ -48,6 +50,8 @@ namespace ReversiGame {
 		public (int black, int white) ColorScore;
 		/// <summary>累積スコア</summary>
 		public (int human, int machine) RaceScore;
+		/// <summary>累積スコア</summary>
+		public (int black, int white) TeamScore;
 		/// <summary>スコア</summary>
 		public (int black, int white, BoardStatus status) Score => Reversi.Score;
 		/// <summary>終局</summary>
@@ -162,10 +166,11 @@ namespace ReversiGame {
 		}
 
 		/// <summary>初期化</summary>
-		private void initialize (BehaviorType? blackAgentType, BehaviorType? whiteAgentType) {
+		private void initialize (BehaviorType? blackAgentType, BehaviorType? whiteAgentType, bool forceChange) {
 			transform.SetAsLastSibling ();
 			if (State == GameState.NotReady) {
 				detectAgents (blackAgentType, whiteAgentType);
+				ForceChange = forceChange;
 				Reversi = new Reversi ();
 				ColorScore = (0, 0);
 				board = BoardObject.Create (transform, this);
@@ -206,8 +211,9 @@ namespace ReversiGame {
 			switch (State) {
 				case GameState.Reset: // リセット要求がある
 					Reversi.Reset ();
+					if (ForceChange && MachineOnly) { ChangeAgents (); }
 					board.RequestUpdate ();
-					Debug.Log ($"GameReseted black={(BlackHuman ? "human" : "machine")}, white={(WhiteHuman ? "human" : "machine")}, step={Reversi.Step}, turn={(Reversi.IsBlackTurn ? "Black" : "White")}, status={Reversi.Score.status}");
+					Debug.Log ($"GameReseted black[{blackAgent.TeamId}]={(BlackHuman ? "human" : "machine")}, white[{whiteAgent.TeamId}]={(WhiteHuman ? "human" : "machine")}, step={Reversi.Step}, turn={(Reversi.IsBlackTurn ? "Black" : "White")}, status={Reversi.Score.status}");
 					State = GameState.Play;
 					break;
 				case GameState.End: // 終局
@@ -228,7 +234,13 @@ namespace ReversiGame {
 					if (blackAgent.IsMachine) { blackAgent.OnEnd (); }
 					if (whiteAgent.IsMachine) { whiteAgent.OnEnd (); }
 					if (HumanWin) { RaceScore.human++; } else if (MachineWin) { RaceScore.machine++; }
-					if (Reversi.BlackWin) { ColorScore.black++; } else if (Reversi.WhiteWin) { ColorScore.white++; }
+					if (Reversi.BlackWin) {
+						ColorScore.black++;
+						if (blackAgent.TeamId == 1) { TeamScore.black++; } else if (blackAgent.TeamId == 0) { TeamScore.white++; }
+					} else if (Reversi.WhiteWin) {
+						ColorScore.white++;
+						if (whiteAgent.TeamId == 1) { TeamScore.black++; } else if (whiteAgent.TeamId == 0) { TeamScore.white++; }
+					}
 					Debug.Log ($"GameReseted step={Reversi.Step}, turn={(Reversi.IsBlackTurn ? "Black" : "White")}, status={Reversi.Score.status}");
 					board.RequestUpdate ();
 					break;

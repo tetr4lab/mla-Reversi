@@ -12,7 +12,7 @@ namespace ReversiGame {
 	public class ReversiAgent : Agent {
 
 		/// <summary>チーム識別子</summary>
-		public enum TeamColor {
+		public enum Team {
 			Black = 1,
 			White = 0,
 		}
@@ -28,16 +28,16 @@ namespace ReversiGame {
 		private BehaviorParameters _parameters;
 		/// <summary>チームID</summary>
 		public int TeamId => Parameters.TeamId;
-		/// <summary>チーム</summary>
-		public TeamColor Team { get; private set; }
+		/// <summary>チームカラー</summary>
+		public Team TeamColor { get; private set; }
 		/// <summary>黒である</summary>
-		public bool IsBlack => Team == TeamColor.Black;
+		public bool IsBlack => TeamColor == Team.Black;
 		/// <summary>白である</summary>
-		public bool IsWhite => Team == TeamColor.White;
+		public bool IsWhite => TeamColor == Team.White;
 		/// <summary>自分が優勢</summary>
-		public bool IWinner => (Team == TeamColor.Black && reversi.BlackWin) || (Team == TeamColor.White && reversi.WhiteWin);
+		public bool IWinner => (TeamColor == Team.Black && reversi.BlackWin) || (TeamColor == Team.White && reversi.WhiteWin);
 		/// <summary>自分が劣勢</summary>
-		public bool ILoser => (Team == TeamColor.Black && reversi.WhiteWin) || (Team == TeamColor.White && reversi.BlackWin);
+		public bool ILoser => (TeamColor == Team.Black && reversi.WhiteWin) || (TeamColor == Team.White && reversi.BlackWin);
 
 		/// <summary>挙動タイプ</summary>
 		public BehaviorType BehaviorType {
@@ -68,7 +68,7 @@ namespace ReversiGame {
 		/// <summary>チームカラーの入れ替え (チームIDは変更しない)</summary>
 		public bool ChangeTeam () {
 			if (reversi.Step == 0 || reversi.IsEnd) {
-				Team = (Team == TeamColor.Black) ? TeamColor.White : TeamColor.Black;
+				TeamColor = (TeamColor == Team.Black) ? Team.White : Team.Black;
 				return true;
 			}
 			return false;
@@ -90,27 +90,28 @@ namespace ReversiGame {
 		public void Init () {
 			if (!game) { // 一度だけ
 				game = GetComponentInParent<Game> ();
-				Team = (TeamColor) TeamId;
+				TeamColor = (Team) TeamId;
 			}
 		}
 
 		/// <summary>エピソードの開始</summary>
 		public override void OnEpisodeBegin () {
-			Debug.Log ($"OnEpisodeBegin ({Team}): step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
+			Debug.Log ($"OnEpisodeBegin ({TeamColor}): step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
 			if (reversi.Step > 0 && game.State == GameState.Play) { Debug.LogError ("Not Reseted"); }
 		}
 
 		/// <summary>環境の観測</summary>
 		public override void CollectObservations (VectorSensor sensor) {
-			Debug.Log ($"CollectObservations ({Team}): step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
+			Debug.Log ($"CollectObservations ({TeamColor}): step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
 			for (var i = 0; i < Size * Size; i++) {
-				sensor.AddObservation ((float) reversi [i].Status / (float) SquareStatus.MaxValue); // 正規化
+				//sensor.AddObservation ((float) reversi [i].Status); // 正規化なし
+				sensor.AddObservation ((float) reversi [i].Status / (float) SquareStatus.MaxValue); // 正規化あり
 			}
 		}
 
 		/// <summary>行動のマスク</summary>
 		public override void CollectDiscreteActionMasks (DiscreteActionMasker actionMasker) {
-			Debug.Log ($"CollectDiscreteActionMasks ({Team}): step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
+			Debug.Log ($"CollectDiscreteActionMasks ({TeamColor}): step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
 			var actionIndices = new List<int> { };
 			for (var i = 0; i < Size * Size; i++) {
 				var status = reversi.Status (i);
@@ -127,35 +128,35 @@ namespace ReversiGame {
 
 		/// <summary>行動と報酬の割り当て</summary>
 		public override void OnActionReceived (float [] vectorAction) {
-			Debug.Log ($"OnActionReceived ({Team}) [{vectorAction [0]}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
+			Debug.Log ($"OnActionReceived ({TeamColor}) [{vectorAction [0]}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
 			if (IsMachine) {
 				try {
 					if (game.TurnAgent != this) throw new AgentMismatchException (); // エージェントの不一致
-					if ((reversi.IsBlackTurn && Team != TeamColor.Black) || (reversi.IsWhiteTurn && Team != TeamColor.White)) throw new TeamMismatchException (); // 手番とチームの不整合
+					if ((reversi.IsBlackTurn && TeamColor != Team.Black) || (reversi.IsWhiteTurn && TeamColor != Team.White)) throw new TeamMismatchException (); // 手番とチームの不整合
 					var index = Mathf.FloorToInt (vectorAction [0]); // 整数化
 					if (!reversi.Enable (index)) { throw new ArgumentOutOfRangeException (); } // 置けない場所
 					game.Move (index);
-					Debug.Log ($"Moved ({Team}) [{index}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
+					Debug.Log ($"Moved ({TeamColor}) [{index}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
 					AddReward (-0.0003f); // 継続報酬
 				} catch (AgentMismatchException) {
 					EndEpisode ();
-					Debug.LogError ($"Agent mismatch ({Team}): Step={reversi.Step}, Turn={(reversi.IsBlackTurn ? "Black" : "White")}, Status={reversi.Score.status}\n{reversi}");
+					Debug.LogError ($"Agent mismatch ({TeamColor}): Step={reversi.Step}, Turn={(reversi.IsBlackTurn ? "Black" : "White")}, Status={reversi.Score.status}\n{reversi}");
 				} catch (ArgumentOutOfRangeException) {
 					EndEpisode ();
-					Debug.LogWarning ($"DisableMove ({Team}) [{vectorAction [0]}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}\n{reversi}");
+					Debug.LogWarning ($"DisableMove ({TeamColor}) [{vectorAction [0]}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}\n{reversi}");
 				} catch (TeamMismatchException) {
-					Debug.LogWarning ($"Team mismatch ({Team}): Step={reversi.Step}, Turn={(reversi.IsBlackTurn ? "Black" : "White")}, Status={reversi.Score.status}\n{reversi}");
+					Debug.LogWarning ($"Team mismatch ({TeamColor}): Step={reversi.Step}, Turn={(reversi.IsBlackTurn ? "Black" : "White")}, Status={reversi.Score.status}\n{reversi}");
 				} finally {
 					game.TurnAgent = null; // 要求を抹消
 				}
 			} else {
-				Debug.LogError ($"{Team}Agent is not Human: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
+				Debug.LogError ($"{TeamColor}Agent is not Human: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
 			}
 		}
 
 		/// <summary>終局処理と最終的な報酬の割り当て</summary>
 		public void OnEnd () {
-			Debug.Log ($"AgentOnEnd ({Team}, {(IWinner ? "winner" : ILoser ? "loser" : "draw")}): step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
+			Debug.Log ($"AgentOnEnd ({TeamColor}, {(IWinner ? "winner" : ILoser ? "loser" : "draw")}): step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
 			if (IsMachine) {
 				if (IWinner) {
 					SetReward (1.0f); // 勝利報酬
@@ -166,7 +167,7 @@ namespace ReversiGame {
 				}
 				EndEpisode ();
 			} else {
-				Debug.LogError ($"{Team}Agent is not Human: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
+				Debug.LogError ($"{TeamColor}Agent is not Human: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.status}");
 			}
 		}
 

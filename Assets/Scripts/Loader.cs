@@ -15,15 +15,21 @@ namespace ReversiGame {
 
 		/// <summary>プレイヤーまたはトレーナーを起動して自身を消す</summary>
 		private void Awake () {
+			// デフォルト値
 			var player = true;
+			var change = true;
+			// コマンドライン引数
 #if TRAINER_TEST && UNITY_EDITOR
-			var args = new [] { "-trainer", "-width", "4", "-height", "4" };
+			var args = new [] { "-trainer", "-width", "4", "-height", "4" }; // シミュレーション
 #else
 			var args = System.Environment.GetCommandLineArgs ();
 #endif
 			for (var i = 0; i < args.Length; i++) {
 
 				switch (args [i].ToLower ()) {
+					case "-player":
+						player = true;
+						break;
 					case "-trainer":
 						player = false;
 						break;
@@ -37,11 +43,18 @@ namespace ReversiGame {
 							TrainerHeight = height;
 						}
 						break;
+					case "-change": // トレーニング時の手番の切り替え
+						change = true;
+						break;
+					case "-fix": // トレーニング時の手番の固定
+						change = false;
+						break;
 				}
 			}
+			// 起動
 			var center = new Vector3 (Screen.width / 2f, Screen.height / 2f);
 			if (player) {
-				Game.Create (transform.parent, center, BehaviorType.HeuristicOnly, BehaviorType.InferenceOnly);
+				Game.Create (transform.parent, center, BehaviorType.HeuristicOnly, BehaviorType.InferenceOnly, change);
 			} else {
 				for (var i = 0; i < TrainerHeight; i++) {
 					for (var j = 0; j < TrainerWidth; j++) {

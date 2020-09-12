@@ -72,8 +72,8 @@ namespace ReversiGame {
 		/// <summary>表示更新要求</summary>
 		public void RequestUpdate () {
 			if (AllowUpdate) {
-				Debug.Log ($"Scores Race=({game.RaceScore}), Color=({game.ColorScore}), Human={game.HumanScore}, Machine={game.MachineScore}, Black={game.Score.black}, White={game.Score.white}");
-				(var x, var y) = game.HumanVsMachine ? game.RaceScore : game.ColorScore;
+				Debug.Log ($"Scores Race=({game.RaceScore}), Color=({game.ColorScore}), Team=({game.TeamScore}), Human={game.HumanScore}, Machine={game.MachineScore}, Black={game.Score.black}, White={game.Score.white}");
+				(var x, var y) = (game.ForceChange && game.MachineOnly) ? game.TeamScore : game.HumanVsMachine ? game.RaceScore : game.ColorScore;
 				totalScoreText.text = $"{x} : {y}";
 				var score = game.Score;
 				scoreText.text = game.HumanVsMachine ? $"{game.HumanScore} : {game.MachineScore}" : $"{score.black} : {score.white}";
