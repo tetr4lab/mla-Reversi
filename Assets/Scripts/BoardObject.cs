@@ -72,12 +72,12 @@ namespace ReversiGame {
 		/// <summary>表示更新要求</summary>
 		public void RequestUpdate () {
 			if (AllowUpdate) {
-				Debug.Log ($"Scores Race=({game.RaceScore}), Color=({game.ColorScore}), Team=({game.TeamScore}), Human={game.HumanScore}, Machine={game.MachineScore}, Black={game.Score.black}, White={game.Score.white}");
-				(var x, var y) = (game.ForceChange && game.MachineOnly) ? game.TeamScore : game.HumanVsMachine ? game.RaceScore : game.ColorScore;
-				totalScoreText.text = $"{x} : {y}";
+				Debug.Log ($"Scores Race={game.RaceScore}, Color={game.ColorScore}, Team={game.TeamScore}, Human={game.HumanScore}, Machine={game.MachineScore}, Black={game.Score.Black}, White={game.Score.White}");
+				var totalScore = (game.ForceChange && game.MachineOnly) ? game.TeamScore : game.HumanVsMachine ? game.RaceScore : game.ColorScore;
+				totalScoreText.text = $"{totalScore.Black} : {totalScore.White}";
 				var score = game.Score;
-				scoreText.text = game.HumanVsMachine ? $"{game.HumanScore} : {game.MachineScore}" : $"{score.black} : {score.white}";
-				turnText.text = (score.status == BoardStatus.End) ? "End" : game.IsBlackTurn ? "Black" : "White";
+				scoreText.text = game.HumanVsMachine ? $"{game.HumanScore} : {game.MachineScore}" : $"{score.Black} : {score.White}";
+				turnText.text = (score.Status == Movability.End) ? "End" : game.IsBlackTurn ? "Black" : "White";
 				lastMoveText.text = (game.LastMove.i < 0) ? "Pass" : ((game.Step == 0) ? "" : $"{colName [game.LastMove.j]}{rowName [game.LastMove.i]}");
 				stepText.text = $"Move {game.Step}";
 				foreach (var square in squares) {

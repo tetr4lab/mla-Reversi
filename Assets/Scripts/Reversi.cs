@@ -3,6 +3,17 @@ using System.Collections.Generic;
 
 namespace ReversiLogic {
 
+	/// <summary>スコア</summary>
+	public class Score {
+		public int Black;
+		public int White;
+		public int Human { get => Black; set => Black = value; }
+		public int Machine { get => White; set => White = value; }
+		public Score () { Black = White = 0; }
+		public Score (int black, int white) { Black = black; White = white; }
+		public override string ToString () => $"({Black}, {White})";
+	}
+
 	/// <summary>ゲーム</summary>
 	public class Reversi {
 
@@ -19,19 +30,19 @@ namespace ReversiLogic {
 		public bool IsWhiteTurn => !IsBlackTurn;
 
 		/// <summary>終局</summary>
-		public bool IsEnd => board.Score.status == BoardStatus.End;
+		public bool IsEnd => board.Score.Status == Movability.End;
 
 		/// <summary>黒の優勢</summary>
-		public bool BlackWin => board.Score.black > board.Score.white;
+		public bool BlackWin => board.Score.Black > board.Score.White;
 
 		/// <summary>白の優勢</summary>
-		public bool WhiteWin => board.Score.black < board.Score.white;
+		public bool WhiteWin => board.Score.Black < board.Score.White;
 
 		/// <summary>黒の差し手がある</summary>
-		public bool BlackEnable => (board.Score.status & BoardStatus.BlackEnable) == BoardStatus.BlackEnable;
+		public bool BlackEnable => (board.Score.Status & Movability.BlackEnable) == Movability.BlackEnable;
 
 		/// <summary>白の差し手がある</summary>
-		public bool WhiteEnable => (board.Score.status & BoardStatus.WhiteEnable) == BoardStatus.WhiteEnable;
+		public bool WhiteEnable => (board.Score.Status & Movability.WhiteEnable) == Movability.WhiteEnable;
 
 		/// <summary>盤</summary>
 		private Board board;
@@ -43,10 +54,10 @@ namespace ReversiLogic {
 		public Square this [int index] => board [index];
 
 		/// <summary>マスの状態</summary>
-		public SquareStatus? Status (int index) => board.GetSquareStatus (index);
+		public SquareStatus? SquareStatus (int index) => board.GetSquareStatus (index);
 
 		/// <summary>マスの状態</summary>
-		public SquareStatus? Status (int i, int j) => board.GetSquareStatus (i, j);
+		public SquareStatus? SquareStatus (int i, int j) => board.GetSquareStatus (i, j);
 
 		/// <summary>コンストラクタ</summary>
 		public Reversi () { Step = 0; IsBlackTurn = true; board = new Board (); }
@@ -55,7 +66,7 @@ namespace ReversiLogic {
 		public void Reset () { Step = 0; IsBlackTurn = true; board.Reset (); }
 
 		/// <summary>スコアと局面</summary>
-		public (int black, int white, BoardStatus status) Score => board.Score;
+		public BoardScore Score => board.Score;
 
 		/// <summary>手番の石が置けるか</summary>
 		public bool Enable (int i, int j) => board.Enable (i, j, IsBlackTurn);
@@ -76,10 +87,10 @@ namespace ReversiLogic {
 			} else { // 置けない場所に置こうとした
 				throw new InvalidOperationException ($"{(IsBlackTurn ? "black" : "white")} turn without a hand ({i}, {j}) {board.GetSquareStatus (i, j)}");
 			}
-			var b = board.Score.status; // 盤の状態
-			if ((b & (IsBlackTurn ? BoardStatus.WhiteEnable : BoardStatus.BlackEnable)) != 0) { // 相手が置ける
+			var b = board.Score.Status; // 盤の状態
+			if ((b & (IsBlackTurn ? Movability.WhiteEnable : Movability.BlackEnable)) != 0) { // 相手が置ける
 				IsBlackTurn = !IsBlackTurn; // チェンジ
-			} else if (b != BoardStatus.End) { // 終局以外で相手が置けない
+			} else if (b != Movability.End) { // 終局以外で相手が置けない
 				LastMove = (-1, -1); // 相手がパス
 				Step++; // パスした分のステップを加算
 			}
@@ -92,12 +103,23 @@ namespace ReversiLogic {
 
 	}
 
-	/// <summary>盤の状態</summary>
-	[Flags] public enum BoardStatus {
+	/// <summary>打石の可能性</summary>
+	[Flags] public enum Movability {
 		End = 0,
 		BlackEnable = 1,
 		WhiteEnable = 2,
 		BothEnable = BlackEnable | WhiteEnable,
+	}
+
+	/// <summary>ボードスコア</summary>
+	public class BoardScore {
+		public Score Score;
+		public Movability Status;
+		public int Black { get => Score.Black; set => Score.Black = value; }
+		public int White { get => Score.White; set => Score.White = value; }
+		public BoardScore () { Score = new Score (); Status = 0; }
+		public BoardScore (int black, int white, Movability status) { Score = new Score (black, white); this.Status = status; }
+		public override string ToString () => $"({Black}, {White}, {Status})";
 	}
 
 	/// <summary>盤</summary>
@@ -146,17 +168,17 @@ namespace ReversiLogic {
 		private int whiteScore;
 
 		/// <summary>局面状態キャッシュ</summary>
-		private BoardStatus boardStatus;
+		private Movability movaibility;
 
 		/// <summary>盤面状態キャッシュ</summary>
 		private SquareStatus [,] squareStatuses;
 
 		/// <summary>スコアと局面</summary>
-		public (int black, int white, BoardStatus status) Score {
+		public BoardScore Score {
 			get {
 				if (dirty) {
 					blackScore = whiteScore = 0;
-					boardStatus = BoardStatus.End;
+					movaibility = Movability.End;
 					for (var i = 0; i < Size; i++) {
 						for (var j = 0; j < Size; j++) {
 							var s = getSquareStatus (i, j);
@@ -167,17 +189,17 @@ namespace ReversiLogic {
 								whiteScore++;
 							} else {
 								if (s.BlackEnable ()) {
-									boardStatus |= BoardStatus.BlackEnable;
+									movaibility |= Movability.BlackEnable;
 								}
 								if (s.WhiteEnable ()) {
-									boardStatus |= BoardStatus.WhiteEnable;
+									movaibility |= Movability.WhiteEnable;
 								}
 							}
 						}
 					}
 					dirty = false;
 				}
-				return (blackScore, whiteScore, boardStatus);
+				return new BoardScore (blackScore, whiteScore, movaibility);
 			}
 		}
 
@@ -298,7 +320,7 @@ namespace ReversiLogic {
 				}
 				board [i] = string.Join ("", row.ConvertAll (s => s.ToString ()));
 			}
-			return $"Score = {score.black} : {score.white} ({score.status})\n{string.Join ("\n", board)}";
+			return $"Score = {score.Black} : {score.White} ({score.Status})\n{string.Join ("\n", board)}";
 		}
 
 	}

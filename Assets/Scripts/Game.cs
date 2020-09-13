@@ -47,13 +47,13 @@ namespace ReversiGame {
 		/// <summary>最後の手</summary>
 		public (int i, int j) LastMove => Reversi.LastMove;
 		/// <summary>累積スコア</summary>
-		public (int black, int white) ColorScore;
+		public Score ColorScore;
 		/// <summary>累積スコア</summary>
-		public (int human, int machine) RaceScore;
+		public Score RaceScore;
 		/// <summary>累積スコア</summary>
-		public (int black, int white) TeamScore;
+		public Score TeamScore;
 		/// <summary>スコア</summary>
-		public (int black, int white, BoardStatus status) Score => Reversi.Score;
+		public BoardScore Score => Reversi.Score;
 		/// <summary>終局</summary>
 		public bool IsEnd => Reversi.IsEnd;
 		/// <summary>黒の手番</summary>
@@ -81,9 +81,9 @@ namespace ReversiGame {
 		/// <summary>人間対機械時の機械のエージェント</summary>
 		public ReversiAgent MachineAgent => HumanVsMachine ? (BlackMachine ? blackAgent : whiteAgent) : null;
 		/// <summary>人間対機械時の人間のスコア</summary>
-		public int HumanScore => HumanVsMachine ? BlackHuman ? Reversi.Score.black : Reversi.Score.white : 0;
+		public int HumanScore => HumanVsMachine ? BlackHuman ? Reversi.Score.Black : Reversi.Score.White : 0;
 		/// <summary>人間対機械時の機械のスコア</summary>
-		public int MachineScore => HumanVsMachine ? BlackMachine ? Reversi.Score.black : Reversi.Score.white : 0;
+		public int MachineScore => HumanVsMachine ? BlackMachine ? Reversi.Score.Black : Reversi.Score.White : 0;
 		/// <summary>人間対機械時の人間の優勢</summary>
 		public bool HumanWin => HumanScore > MachineScore;
 		/// <summary>人間対機械時の機械の優勢</summary>
@@ -91,7 +91,7 @@ namespace ReversiGame {
 		/// <summary>マスの取得</summary>
 		public Square this [int index] => Reversi [index];
 		/// <summary>マスの状態</summary>
-		public SquareStatus? SquareStatus (int index) => Reversi.Status (index);
+		public SquareStatus? SquareStatus (int index) => Reversi.SquareStatus (index);
 		/// <summary>手番の石が置けるか</summary>
 		public bool Enable (int index) => Reversi.Enable (index);
 		/// <summary>決定要求中のエージェント</summary>
@@ -172,7 +172,9 @@ namespace ReversiGame {
 				detectAgents (blackAgentType, whiteAgentType);
 				ForceChange = forceChange;
 				Reversi = new Reversi ();
-				ColorScore = (0, 0);
+				ColorScore = new Score (0, 0);
+				RaceScore = new Score (0, 0);
+				TeamScore = new Score (0, 0);
 				board = BoardObject.Create (transform, this);
 				Resources.UnloadUnusedAssets ();
 				if (HumanVsMachine) {
@@ -213,7 +215,7 @@ namespace ReversiGame {
 					Reversi.Reset ();
 					if (ForceChange && MachineOnly) { ChangeAgents (); }
 					board.RequestUpdate ();
-					Debug.Log ($"GameReseted black[{blackAgent.TeamId}]={(BlackHuman ? "human" : "machine")}, white[{whiteAgent.TeamId}]={(WhiteHuman ? "human" : "machine")}, step={Reversi.Step}, turn={(Reversi.IsBlackTurn ? "Black" : "White")}, status={Reversi.Score.status}");
+					Debug.Log ($"GameReseted black[{blackAgent.TeamId}]={(BlackHuman ? "human" : "machine")}, white[{whiteAgent.TeamId}]={(WhiteHuman ? "human" : "machine")}, step={Reversi.Step}, turn={(Reversi.IsBlackTurn ? "Black" : "White")}, status={Reversi.Score.Status}");
 					State = GameState.Play;
 					break;
 				case GameState.End: // 終局
@@ -233,15 +235,15 @@ namespace ReversiGame {
 					}
 					if (blackAgent.IsMachine) { blackAgent.OnEnd (); }
 					if (whiteAgent.IsMachine) { whiteAgent.OnEnd (); }
-					if (HumanWin) { RaceScore.human++; } else if (MachineWin) { RaceScore.machine++; }
+					if (HumanWin) { RaceScore.Human++; } else if (MachineWin) { RaceScore.Machine++; }
 					if (Reversi.BlackWin) {
-						ColorScore.black++;
-						if (blackAgent.TeamId == 1) { TeamScore.black++; } else if (blackAgent.TeamId == 0) { TeamScore.white++; }
+						ColorScore.Black++;
+						if (blackAgent.TeamId == 1) { TeamScore.Black++; } else if (blackAgent.TeamId == 0) { TeamScore.White++; }
 					} else if (Reversi.WhiteWin) {
-						ColorScore.white++;
-						if (whiteAgent.TeamId == 1) { TeamScore.black++; } else if (whiteAgent.TeamId == 0) { TeamScore.white++; }
+						ColorScore.White++;
+						if (whiteAgent.TeamId == 1) { TeamScore.Black++; } else if (whiteAgent.TeamId == 0) { TeamScore.White++; }
 					}
-					Debug.Log ($"GameReseted step={Reversi.Step}, turn={(Reversi.IsBlackTurn ? "Black" : "White")}, status={Reversi.Score.status}");
+					Debug.Log ($"GameReseted step={Reversi.Step}, turn={(Reversi.IsBlackTurn ? "Black" : "White")}, status={Reversi.Score.Status}");
 					board.RequestUpdate ();
 					break;
 				case GameState.Play: // プレイ進行中
@@ -249,10 +251,10 @@ namespace ReversiGame {
 						State = GameState.End;
 					}
 					if (BlackMachine && IsBlackTurn && BlackEnable) { // 黒機械の手番
-						Debug.Log ($"BlackAgent.RequestDecision step={Step}, turn={(IsBlackTurn ? "Black" : "White")}, status={Score.status}");
+						Debug.Log ($"BlackAgent.RequestDecision step={Step}, turn={(IsBlackTurn ? "Black" : "White")}, status={Score.Status}");
 						StartCoroutine (RequestDecision (blackAgent));
 					} else if (WhiteMachine && IsWhiteTurn && WhiteEnable) { // 白機械の手番
-						Debug.Log ($"WhiteAgent.RequestDecision step={Step}, turn={(IsBlackTurn ? "Black" : "White")}, status={Score.status}");
+						Debug.Log ($"WhiteAgent.RequestDecision step={Step}, turn={(IsBlackTurn ? "Black" : "White")}, status={Score.Status}");
 						StartCoroutine (RequestDecision (whiteAgent));
 					}
 					break;
