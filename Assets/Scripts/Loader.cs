@@ -58,7 +58,7 @@ namespace ReversiGame {
 			} else {
 				for (var i = 0; i < TrainerHeight; i++) {
 					for (var j = 0; j < TrainerWidth; j++) {
-						Game.Create (transform.parent, center + new Vector3 (Screen.width * j, Screen.height * i, 0f));
+						Game.Create (transform.parent, center + new Vector3 (Screen.width * j, Screen.height * i, 0f), forceChange: change);
 					}
 				}
 			}
