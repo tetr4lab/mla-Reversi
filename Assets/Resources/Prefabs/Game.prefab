@@ -52,10 +52,10 @@ MonoBehaviour:
   m_BrainParameters:
     VectorObservationSize: 64
     NumStackedVectorObservations: 1
-    VectorActionSize: 40000000
+    VectorActionSize: 41000000
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
-  m_Model: {fileID: 5022602860645237092, guid: d44cbae86af1cf34285f4990401ad8c1, type: 3}
+  m_Model: {fileID: 0}
   m_InferenceDevice: 0
   m_BehaviorType: 0
   m_BehaviorName: Reversi
@@ -130,6 +130,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70d98ea4a8b99904a931f885ffdfd865, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ForceChange: 0
   TurnAgent: {fileID: 0}
 --- !u!222 &1712492908399389805
 CanvasRenderer:
@@ -220,10 +221,10 @@ MonoBehaviour:
   m_BrainParameters:
     VectorObservationSize: 64
     NumStackedVectorObservations: 1
-    VectorActionSize: 40000000
+    VectorActionSize: 41000000
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
-  m_Model: {fileID: 5022602860645237092, guid: d44cbae86af1cf34285f4990401ad8c1, type: 3}
+  m_Model: {fileID: 0}
   m_InferenceDevice: 0
   m_BehaviorType: 0
   m_BehaviorName: Reversi

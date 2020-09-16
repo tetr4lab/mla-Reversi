@@ -196,6 +196,7 @@ namespace ReversiGame {
 		public void Move (int index) {
 			if (Enable (index)) {
 				Reversi.Move (index);
+				System.GC.Collect (); // ガベージコレクト
 				board.RequestUpdate ();
 			}
 		}
@@ -250,10 +251,10 @@ namespace ReversiGame {
 					if (IsEnd) { // 終局を検出
 						State = GameState.End;
 					}
-					if (BlackMachine && IsBlackTurn && BlackEnable) { // 黒機械の手番
+					if (BlackMachine && IsBlackTurn) { // 黒機械の手番
 						Debug.Log ($"BlackAgent.RequestDecision step={Step}, turn={(IsBlackTurn ? "Black" : "White")}, status={Score.Status}");
 						StartCoroutine (RequestDecision (blackAgent));
-					} else if (WhiteMachine && IsWhiteTurn && WhiteEnable) { // 白機械の手番
+					} else if (WhiteMachine && IsWhiteTurn) { // 白機械の手番
 						Debug.Log ($"WhiteAgent.RequestDecision step={Step}, turn={(IsBlackTurn ? "Black" : "White")}, status={Score.Status}");
 						StartCoroutine (RequestDecision (whiteAgent));
 					}

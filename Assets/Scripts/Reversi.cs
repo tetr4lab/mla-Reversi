@@ -74,26 +74,27 @@ namespace ReversiLogic {
 		/// <summary>手番の石が置けるか</summary>
 		public bool Enable (int index) => board.Enable (index, IsBlackTurn);
 
-		// <summary>石を置いてターンを切り替え</summary>
+		// <summary>石を置いてターンを切り替え -1でパス</summary>
 		/// <returns>終局</returns>
 		public void Move (int index) => Move (index / Board.Size, index % Board.Size);
 
-		// <summary>石を置いてターンを切り替え</summary>
+		// <summary>石を置いてターンを切り替え (0, -1)でパス</summary>
 		public void Move (int i, int j) {
-			if (Enable (i, j)) {
+			if (i < 0 || i >= Board.Size || j < 0 || j >= Board.Size) { // ボード外
+				if (i == 0 && j == -1) { // パス
+					LastMove = (-1, -1);
+					Step++;
+				} else {
+					throw new ArgumentOutOfRangeException ($"{(IsBlackTurn ? "black" : "white")} turn without a hand ({i}, {j})");
+				}
+			} else if (Enable (i, j)) {
 				board.Move (i, j, IsBlackTurn, Step + 1);
 				LastMove = (i, j);
 				Step++;
 			} else { // 置けない場所に置こうとした
 				throw new InvalidOperationException ($"{(IsBlackTurn ? "black" : "white")} turn without a hand ({i}, {j}) {board.GetSquareStatus (i, j)}");
 			}
-			var b = board.Score.Status; // 盤の状態
-			if ((b & (IsBlackTurn ? Movability.WhiteEnable : Movability.BlackEnable)) != 0) { // 相手が置ける
-				IsBlackTurn = !IsBlackTurn; // チェンジ
-			} else if (b != Movability.End) { // 終局以外で相手が置けない
-				LastMove = (-1, -1); // 相手がパス
-				Step++; // パスした分のステップを加算
-			}
+			IsBlackTurn = !IsBlackTurn; // チェンジ
 		}
 
 		/// <summary>文字列化</summary>

@@ -43,6 +43,7 @@ namespace ReversiGame {
 		[SerializeField, Tooltip ("手番表示体")] private Text turnText = default;
 		[SerializeField, Tooltip ("最終手表示体")] private Text lastMoveText = default;
 		[SerializeField, Tooltip ("手数表示体")] private Text stepText = default;
+		[SerializeField, Tooltip ("パスボタン")] private Button passButton = default;
 
 		/// <summary>物理ゲーム</summary>
 		private Game game;
@@ -83,6 +84,7 @@ namespace ReversiGame {
 				foreach (var square in squares) {
 					square.RequestUpdate ();
 				}
+				passButton.gameObject.SetActive (score.Status != (game.IsBlackTurn ? Movability.BlackEnable : Movability.WhiteEnable)); // 打てないときだけ表示
 			}
 		}
 
@@ -93,6 +95,11 @@ namespace ReversiGame {
 		public void OnChangeStepToggle () {
 			AllowDisplayHint = hintToggle.isOn;
 			RequestUpdate ();
+		}
+
+		/// <summary>パスボタンが押された</summary>
+		public void OnPressPassButton () {
+			if (game.HumanTurn && !game.TurnAgent) { game.Move (-1); }
 		}
 
 	}
