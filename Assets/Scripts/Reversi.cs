@@ -165,14 +165,8 @@ namespace ReversiLogic {
 			return squareStatuses [i, j];
 		}
 
-		/// <summary>黒スコアキャッシュ</summary>
-		private int blackScore;
-
-		/// <summary>白スコアキャッシュ</summary>
-		private int whiteScore;
-
-		/// <summary>局面状態キャッシュ</summary>
-		private Movability movaibility;
+		/// <summary>ボードスコアキャッシュ</summary>
+		private BoardScore boardScore;
 
 		/// <summary>盤面状態キャッシュ</summary>
 		private SquareStatus [,] squareStatuses;
@@ -181,29 +175,29 @@ namespace ReversiLogic {
 		public BoardScore Score {
 			get {
 				if (dirty) {
-					blackScore = whiteScore = 0;
-					movaibility = Movability.End;
+					boardScore.Black = boardScore.White = 0;
+					boardScore.Status = Movability.End;
 					for (var i = 0; i < Size; i++) {
 						for (var j = 0; j < Size; j++) {
 							var s = getSquareStatus (i, j);
 							squareStatuses [i, j] = s ?? SquareStatus.Empty;
 							if (s.IsBlack ()) {
-								blackScore++;
+								boardScore.Black++;
 							} else if (s.IsWhite ()) {
-								whiteScore++;
+								boardScore.White++;
 							} else {
 								if (s.BlackEnable ()) {
-									movaibility |= Movability.BlackEnable;
+									boardScore.Status |= Movability.BlackEnable;
 								}
 								if (s.WhiteEnable ()) {
-									movaibility |= Movability.WhiteEnable;
+									boardScore.Status |= Movability.WhiteEnable;
 								}
 							}
 						}
 					}
 					dirty = false;
 				}
-				return new BoardScore (blackScore, whiteScore, movaibility);
+				return boardScore;
 			}
 		}
 
@@ -293,6 +287,7 @@ namespace ReversiLogic {
 				}
 			}
 			squareStatuses = new SquareStatus [Size, Size];
+			boardScore = new BoardScore ();
 			Reset (false);
 		}
 

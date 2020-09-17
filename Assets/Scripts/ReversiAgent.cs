@@ -133,11 +133,11 @@ namespace ReversiGame {
 		public override void OnActionReceived (float [] vectorAction) {
 			Debug.Log ($"OnActionReceived ({TeamColor}) [{vectorAction [0]}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.Status}");
 			if (IsMachine) {
+				var index = Mathf.FloorToInt (vectorAction [0]); // 整数化
+				if (index == Size * Size) { index = -1; } // パス
 				try {
 					if (game.TurnAgent != this) throw new AgentMismatchException (); // エージェントの不一致
 					if ((reversi.IsBlackTurn && TeamColor != Team.Black) || (reversi.IsWhiteTurn && TeamColor != Team.White)) throw new TeamMismatchException (); // 手番とチームの不整合
-					var index = Mathf.FloorToInt (vectorAction [0]); // 整数化
-					if (index == Size * Size) { index = -1; } // パス
 					if (!reversi.Enable (index)) { throw new ArgumentOutOfRangeException (); } // 置けない場所
 					game.Move (index);
 					Debug.Log ($"Moved ({TeamColor}) [{index}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.Status}");
@@ -147,7 +147,7 @@ namespace ReversiGame {
 					Debug.LogError ($"Agent mismatch ({TeamColor}): Step={reversi.Step}, Turn={(reversi.IsBlackTurn ? "Black" : "White")}, Status={reversi.Score.Status}\n{reversi}");
 				} catch (ArgumentOutOfRangeException) {
 					EndEpisode ();
-					Debug.LogWarning ($"DisableMove ({TeamColor}) [{vectorAction [0]}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.Status}\n{reversi}");
+					Debug.LogWarning ($"DisableMove ({TeamColor}) [{index}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.Status}\n{reversi}");
 				} catch (TeamMismatchException) {
 					Debug.LogWarning ($"Team mismatch ({TeamColor}): Step={reversi.Step}, Turn={(reversi.IsBlackTurn ? "Black" : "White")}, Status={reversi.Score.Status}\n{reversi}");
 				} finally {
