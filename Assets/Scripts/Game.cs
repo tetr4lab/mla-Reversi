@@ -205,9 +205,14 @@ namespace ReversiGame {
 
 		/// <summary>決定要求 (対人時は遅延実行)</summary>
 		private IEnumerator RequestDecision (ReversiAgent agent) {
-			TurnAgent = agent; // 再入しないように要求中にしておく
-			if (SomeHuman) yield return new WaitForSeconds (TurnInterval);
-			TurnAgent.RequestDecision ();
+			if (agent.Passable || TurnEnable) {
+				TurnAgent = agent; // 再入しないように要求中にしておく
+				if (SomeHuman) yield return new WaitForSeconds (TurnInterval);
+				TurnAgent.RequestDecision ();
+			} else { // 不能なエージェントに対する代理パス
+				Move (-1);
+				Debug.Log ($"Passed: step={Step}, turn={(IsBlackTurn ? "Black" : "White")}, status={Score.Status}");
+			}
 		}
 
 		/// <summary>駆動</summary>

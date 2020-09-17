@@ -39,6 +39,9 @@ namespace ReversiGame {
 		/// <summary>自分が劣勢</summary>
 		public bool ILoser => (TeamColor == Team.Black && reversi.WhiteWin) || (TeamColor == Team.White && reversi.BlackWin);
 
+		/// <summary>VectorAction Branch 0 Size</summary>
+		public bool Passable => Parameters.BrainParameters.VectorActionSize [0] > (Size * Size);
+
 		/// <summary>挙動タイプ</summary>
 		public BehaviorType BehaviorType {
 			get => Parameters.BehaviorType;
@@ -119,7 +122,7 @@ namespace ReversiGame {
 					actionIndices.Add (i);
 				}
 			}
-			if (reversi.TurnEnable) { // 打てるならパスできない
+			if (Passable && reversi.TurnEnable) { // 打てるならパスできない
 				actionIndices.Add (Size * Size);
 			}
 			actionMasker.SetMask (0, actionIndices);
