@@ -198,7 +198,7 @@ namespace ReversiGame {
 		public void Move (int index) {
 			if (Enable (index)) {
 				Reversi.Move (index);
-				System.GC.Collect (); // ガベージコレクト
+				if (SomeHuman) { System.GC.Collect (); } // ガベージコレクト
 				board.RequestUpdate ();
 			}
 		}
