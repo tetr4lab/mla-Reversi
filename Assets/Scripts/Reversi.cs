@@ -44,6 +44,9 @@ namespace ReversiLogic {
 		/// <summary>白の差し手がある</summary>
 		public bool WhiteEnable => (board.Score.Status & Movability.WhiteEnable) == Movability.WhiteEnable;
 
+		/// <summary>手番の差し手がある</summary>
+		public bool TurnEnable => (IsBlackTurn && BlackEnable) || (IsWhiteTurn && WhiteEnable);
+
 		/// <summary>盤</summary>
 		private Board board;
 
@@ -69,10 +72,10 @@ namespace ReversiLogic {
 		public BoardScore Score => board.Score;
 
 		/// <summary>手番の石が置けるか</summary>
-		public bool Enable (int i, int j) => board.Enable (i, j, IsBlackTurn);
+		public bool Enable (int i, int j) => (i == 0 && j == -1 && !TurnEnable) || board.Enable (i, j, IsBlackTurn);
 
 		/// <summary>手番の石が置けるか</summary>
-		public bool Enable (int index) => board.Enable (index, IsBlackTurn);
+		public bool Enable (int index) => (index == -1 && !TurnEnable) || board.Enable (index, IsBlackTurn);
 
 		// <summary>石を置いてターンを切り替え -1でパス</summary>
 		/// <returns>終局</returns>

@@ -84,7 +84,7 @@ namespace ReversiGame {
 				foreach (var square in squares) {
 					square.RequestUpdate ();
 				}
-				passButton.gameObject.SetActive (score.Status != (game.IsBlackTurn ? Movability.BlackEnable : Movability.WhiteEnable)); // 打てないときだけ表示
+				passButton.gameObject.SetActive (!game.IsEnd && !game.TurnEnable); // 打てないときだけ表示
 			}
 		}
 

@@ -64,6 +64,8 @@ namespace ReversiGame {
 		public bool BlackEnable => Reversi.BlackEnable;
 		/// <summary>白の差し手がある</summary>
 		public bool WhiteEnable => Reversi.WhiteEnable;
+		/// <summary>ターンの差し手がある</summary>
+		public bool TurnEnable => Reversi.TurnEnable;
 		/// <summary>人間対機械</summary>
 		public bool HumanVsMachine => BlackHuman != WhiteHuman;
 		/// <summary>人間がいる</summary>

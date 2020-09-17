@@ -119,7 +119,7 @@ namespace ReversiGame {
 					actionIndices.Add (i);
 				}
 			}
-			if (reversi.Score.Status == (IsBlack ? Movability.BlackEnable : Movability.WhiteEnable)) { // 打てるならパスできない
+			if (reversi.TurnEnable) { // 打てるならパスできない
 				actionIndices.Add (Size * Size);
 			}
 			actionMasker.SetMask (0, actionIndices);
@@ -137,11 +137,8 @@ namespace ReversiGame {
 					if (game.TurnAgent != this) throw new AgentMismatchException (); // エージェントの不一致
 					if ((reversi.IsBlackTurn && TeamColor != Team.Black) || (reversi.IsWhiteTurn && TeamColor != Team.White)) throw new TeamMismatchException (); // 手番とチームの不整合
 					var index = Mathf.FloorToInt (vectorAction [0]); // 整数化
-					if (index == Size * Size) {
-						index = -1; // パス
-					} else if (!reversi.Enable (index)) {
-						throw new ArgumentOutOfRangeException (); // 置けない場所
-					}
+					if (index == Size * Size) { index = -1; } // パス
+					if (!reversi.Enable (index)) { throw new ArgumentOutOfRangeException (); } // 置けない場所
 					game.Move (index);
 					Debug.Log ($"Moved ({TeamColor}) [{index}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.Status}");
 					AddReward ((index < 0) ? -0.0006f : -0.0003f); // 継続報酬
