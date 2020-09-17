@@ -20,7 +20,7 @@ namespace ReversiGame {
 			var change = true;
 			// コマンドライン引数
 #if TRAINER_TEST && UNITY_EDITOR
-			var args = new [] { "-trainer", "-width", "4", "-height", "4" }; // シミュレーション
+			var args = new [] { "-trainer", "-width", "7", "-height", "7" }; // シミュレーション
 #else
 			var args = System.Environment.GetCommandLineArgs ();
 #endif
