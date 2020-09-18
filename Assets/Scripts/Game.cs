@@ -198,7 +198,6 @@ namespace ReversiGame {
 		public void Move (int index) {
 			if (Enable (index)) {
 				Reversi.Move (index);
-				if (SomeHuman) { System.GC.Collect (); } // ガベージコレクト
 				board.RequestUpdate ();
 			}
 		}
@@ -222,6 +221,7 @@ namespace ReversiGame {
 				case GameState.Reset: // リセット要求がある
 					Reversi.Reset ();
 					if (ForceChange && MachineOnly) { ChangeAgents (); }
+					if (SomeHuman) { System.GC.Collect (); } // ガベージコレクト
 					board.RequestUpdate ();
 					Debug.Log ($"GameReseted black[{blackAgent.TeamId}]={(BlackHuman ? "human" : "machine")}, white[{whiteAgent.TeamId}]={(WhiteHuman ? "human" : "machine")}, step={Reversi.Step}, turn={(Reversi.IsBlackTurn ? "Black" : "White")}, status={Reversi.Score.Status}");
 					State = GameState.Play;
