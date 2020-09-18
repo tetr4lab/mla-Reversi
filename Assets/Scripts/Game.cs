@@ -174,9 +174,9 @@ namespace ReversiGame {
 				detectAgents (blackAgentType, whiteAgentType);
 				ForceChange = forceChange;
 				Reversi = new Reversi ();
-				ColorScore = new Score (0, 0);
-				RaceScore = new Score (0, 0);
-				TeamScore = new Score (0, 0);
+				ColorScore = new Score ();
+				RaceScore = new Score ();
+				TeamScore = new Score ();
 				board = BoardObject.Create (transform, this);
 				Resources.UnloadUnusedAssets ();
 				if (HumanVsMachine) {
@@ -243,13 +243,16 @@ namespace ReversiGame {
 					}
 					if (blackAgent.IsMachine) { blackAgent.OnEnd (); }
 					if (whiteAgent.IsMachine) { whiteAgent.OnEnd (); }
-					if (HumanWin) { RaceScore.Human++; } else if (MachineWin) { RaceScore.Machine++; }
+					if (HumanWin) { RaceScore.Human++; } else if (MachineWin) { RaceScore.Machine++; } else { RaceScore.Draw++; }
 					if (Reversi.BlackWin) {
 						ColorScore.Black++;
 						if (blackAgent.TeamId == 1) { TeamScore.Black++; } else if (blackAgent.TeamId == 0) { TeamScore.White++; }
 					} else if (Reversi.WhiteWin) {
 						ColorScore.White++;
 						if (whiteAgent.TeamId == 1) { TeamScore.Black++; } else if (whiteAgent.TeamId == 0) { TeamScore.White++; }
+					} else {
+						ColorScore.Draw++;
+						TeamScore.Draw++;
 					}
 					Debug.Log ($"GameReseted step={Reversi.Step}, turn={(Reversi.IsBlackTurn ? "Black" : "White")}, status={Reversi.Score.Status}");
 					board.RequestUpdate ();

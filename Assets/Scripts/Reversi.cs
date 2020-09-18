@@ -7,11 +7,12 @@ namespace ReversiLogic {
 	public class Score {
 		public int Black;
 		public int White;
+		public int Draw;
 		public int Human { get => Black; set => Black = value; }
 		public int Machine { get => White; set => White = value; }
-		public Score () { Black = White = 0; }
-		public Score (int black, int white) { Black = black; White = white; }
-		public override string ToString () => $"({Black}, {White})";
+		public Score () { Black = White = Draw = 0; }
+		public Score (int black, int white, int draw = 0) { Black = black; White = white; Draw = draw; }
+		public override string ToString () => $"({Black}, {White}, {Draw})";
 	}
 
 	/// <summary>ゲーム</summary>
