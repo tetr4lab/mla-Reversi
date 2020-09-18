@@ -37,7 +37,7 @@ namespace ReversiGame {
 		#endregion
 
 		[SerializeField, Tooltip ("表示更新許可切替")] private Toggle updateToggle = default;
-		[SerializeField, Tooltip ("手番表示許可切替")] private Toggle hintToggle = default;
+		[SerializeField, Tooltip ("助言表示許可切替")] private Toggle hintToggle = default;
 		[SerializeField, Tooltip ("総合得点表示体")] private Text totalScoreText = default;
 		[SerializeField, Tooltip ("得点表示体")] private Text scoreText = default;
 		[SerializeField, Tooltip ("手番表示体")] private Text turnText = default;
@@ -89,7 +89,7 @@ namespace ReversiGame {
 		/// <summary>表示更新許可の切り替え</summary>
 		public void OnChangeUpdateToggle () => AllowUpdate = updateToggle.isOn;
 
-		/// <summary>手番表示許可の切り替え</summary>
+		/// <summary>助言表示許可の切り替え</summary>
 		public void OnChangeStepToggle () {
 			AllowDisplayHint = hintToggle.isOn;
 			RequestUpdate ();
