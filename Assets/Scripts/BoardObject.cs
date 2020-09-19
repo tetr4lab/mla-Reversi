@@ -75,7 +75,7 @@ namespace ReversiGame {
 			if (AllowUpdate) {
 				Debug.Log ($"Scores Race={game.RaceScore}, Color={game.ColorScore}, Team={game.TeamScore}, Human={game.HumanScore}, Machine={game.MachineScore}, Black={game.Score.Black}, White={game.Score.White}");
 				var totalScore = (game.ForceChange && game.MachineOnly) ? game.TeamScore : game.HumanVsMachine ? game.RaceScore : game.ColorScore;
-				totalScoreText.text = $"{totalScore.Black} : {totalScore.White} | {totalScore.Draw}"; // 累積スコア
+				totalScoreText.text = (totalScore == Score.Zero) ? "" : $"{totalScore.Black} : {totalScore.White} : {totalScore.Draw}"; // 累積スコア
 				var score = game.Score;
 				scoreText.text = game.HumanVsMachine ? $"{game.HumanScore} : {game.MachineScore}" : $"{score.Black} : {score.White}"; // スコア
 				turnText.text = (score.Status == Movability.End) ? "End" : game.IsBlackTurn ? "Black" : "White"; // ターン

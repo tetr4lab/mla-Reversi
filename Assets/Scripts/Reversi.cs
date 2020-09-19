@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace ReversiLogic {
 
 	/// <summary>スコア</summary>
-	public class Score {
+	public class Score : IEquatable<Score> {
 		public int Black;
 		public int White;
 		public int Draw;
@@ -13,6 +13,18 @@ namespace ReversiLogic {
 		public Score () { Black = White = Draw = 0; }
 		public Score (int black, int white, int draw = 0) { Black = black; White = white; Draw = draw; }
 		public override string ToString () => $"({Black}, {White}, {Draw})";
+		public static readonly Score Zero = new Score ();
+		public virtual bool Equals (Score score) => score != null && this.Black == score.Black && this.White == score.White && this.Draw == score.Draw;
+		public override bool Equals (Object obj) => Equals (obj as Score);
+		public override int GetHashCode () {
+			var hashCode = 1190436781;
+			hashCode = hashCode * -1521134295 + Black.GetHashCode ();
+			hashCode = hashCode * -1521134295 + White.GetHashCode ();
+			hashCode = hashCode * -1521134295 + Draw.GetHashCode ();
+			return hashCode;
+		}
+		public static bool operator == (Score a, Score b) => EqualityComparer<Score>.Default.Equals (a, b);
+		public static bool operator != (Score a, Score b) => !(a == b);
 	}
 
 	/// <summary>ゲーム</summary>
@@ -117,7 +129,7 @@ namespace ReversiLogic {
 	}
 
 	/// <summary>ボードスコア</summary>
-	public class BoardScore {
+	public class BoardScore : IEquatable<BoardScore> {
 		public Score Score;
 		public Movability Status;
 		public int Black { get => Score.Black; set => Score.Black = value; }
@@ -125,6 +137,16 @@ namespace ReversiLogic {
 		public BoardScore () { Score = new Score (); Status = 0; }
 		public BoardScore (int black, int white, Movability status) { Score = new Score (black, white); this.Status = status; }
 		public override string ToString () => $"({Black}, {White}, {Status})";
+		public virtual bool Equals (BoardScore score) => score != null && EqualityComparer<Score>.Default.Equals (Score, score.Score) && Status == score.Status;
+		public override bool Equals (object obj) => Equals (obj as Score);
+		public override int GetHashCode () {
+			var hashCode = 559342988;
+			hashCode = hashCode * -1521134295 + EqualityComparer<Score>.Default.GetHashCode (Score);
+			hashCode = hashCode * -1521134295 + Status.GetHashCode ();
+			return hashCode;
+		}
+		public static bool operator == (BoardScore a, BoardScore b) => EqualityComparer<BoardScore>.Default.Equals (a, b);
+		public static bool operator != (BoardScore a, BoardScore b) => !(a == b);
 	}
 
 	/// <summary>盤</summary>
