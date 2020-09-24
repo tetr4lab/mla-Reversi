@@ -38,6 +38,7 @@ namespace ReversiGame {
 
 		[SerializeField, Tooltip ("表示更新許可切替")] private Toggle updateToggle = default;
 		[SerializeField, Tooltip ("助言表示許可切替")] private Toggle hintToggle = default;
+		[SerializeField, Tooltip ("総合得点表題表示体")] private Text totalScoreTitleText = default;
 		[SerializeField, Tooltip ("総合得点表示体")] private Text totalScoreText = default;
 		[SerializeField, Tooltip ("得点表示体")] private Text scoreText = default;
 		[SerializeField, Tooltip ("手番表示体")] private Text turnText = default;
@@ -75,7 +76,9 @@ namespace ReversiGame {
 			if (AllowUpdate) {
 				Debug.Log ($"Scores Race={game.RaceScore}, Color={game.ColorScore}, Team={game.TeamScore}, Human={game.HumanScore}, Machine={game.MachineScore}, Black={game.Score.Black}, White={game.Score.White}");
 				var totalScore = (game.ForceChange && game.MachineOnly) ? game.TeamScore : game.HumanVsMachine ? game.RaceScore : game.ColorScore;
-				totalScoreText.text = (totalScore == Score.Zero) ? "" : $"{totalScore.Black} : {totalScore.White} : {totalScore.Draw}"; // 累積スコア
+				totalScoreText.text = $"{totalScore.Black} : {totalScore.White} : {totalScore.Draw}"; // 累積スコア
+				totalScoreTitleText.text = totalScore.Title;
+				totalScoreText.gameObject.SetActive (totalScore != Score.Zero);
 				var score = game.Score;
 				scoreText.text = game.HumanVsMachine ? $"{game.HumanScore} : {game.MachineScore}" : $"{score.Black} : {score.White}"; // スコア
 				turnText.text = (score.Status == Movability.End) ? "End" : game.IsBlackTurn ? "Black" : "White"; // ターン

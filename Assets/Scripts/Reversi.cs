@@ -5,17 +5,19 @@ namespace ReversiLogic {
 
 	/// <summary>スコア</summary>
 	public class Score : IEquatable<Score> {
+		public string Title;
 		public int Black;
 		public int White;
 		public int Draw;
 		public int Human { get => Black; set => Black = value; }
 		public int Machine { get => White; set => White = value; }
-		public Score () { Black = White = Draw = 0; }
-		public Score (int black, int white, int draw = 0) { Black = black; White = white; Draw = draw; }
+		public Score () { Title = ""; Black = White = Draw = 0; }
+		public Score (int black, int white, int draw = 0) { Title = ""; Black = black; White = white; Draw = draw; }
+		public Score (string title, int black = 0, int white = 0, int draw = 0) { Title = title; Black = black; White = white; Draw = draw; }
 		public override string ToString () => $"({Black}, {White}, {Draw})";
 		public static readonly Score Zero = new Score ();
 		public virtual bool Equals (Score score) => score != null && this.Black == score.Black && this.White == score.White && this.Draw == score.Draw;
-		public override bool Equals (Object obj) => Equals (obj as Score);
+		public override bool Equals (object obj) => Equals (obj as Score);
 		public override int GetHashCode () {
 			var hashCode = 1190436781;
 			hashCode = hashCode * -1521134295 + Black.GetHashCode ();

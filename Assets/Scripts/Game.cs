@@ -174,9 +174,9 @@ namespace ReversiGame {
 				detectAgents (blackAgentType, whiteAgentType);
 				ForceChange = forceChange;
 				Reversi = new Reversi ();
-				ColorScore = new Score ();
-				RaceScore = new Score ();
-				TeamScore = new Score ();
+				ColorScore = new Score ("Black : White");
+				RaceScore = new Score ("Human : Machine");
+				TeamScore = new Score ("Agent1 : Agent0");
 				board = BoardObject.Create (transform, this);
 				Resources.UnloadUnusedAssets ();
 				if (HumanVsMachine) {
