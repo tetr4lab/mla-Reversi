@@ -68,6 +68,9 @@ namespace ReversiGame {
 			}
 		}
 
+		/// <summary>トレーニング中の可能性が高い</summary>
+		public bool IsTraning => Parameters.BehaviorType == BehaviorType.Default;
+
 		/// <summary>チームカラーの入れ替え (チームIDは変更しない)</summary>
 		public bool ChangeTeam () {
 			if (reversi.Step == 0 || reversi.IsEnd) {
@@ -106,10 +109,12 @@ namespace ReversiGame {
 		/// <summary>環境の観測</summary>
 		public override void CollectObservations (VectorSensor sensor) {
 			Debug.Log ($"CollectObservations ({TeamColor}): step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.Status}");
+			var statuses = new float [Size * Size];
 			for (var i = 0; i < Size * Size; i++) {
-				//sensor.AddObservation ((float) reversi [i].Status); // 正規化なし
-				sensor.AddObservation ((float) reversi [i].Status / (float) SquareStatus.MaxValue); // 正規化あり
+				//statuses [i] = (float) reversi [i].Status; // 正規化なし
+				statuses [i] = (float) reversi [i].Status / (float) SquareStatus.MaxValue; // 正規化あり
 			}
+			sensor.AddObservation (statuses);
 		}
 
 		/// <summary>行動のマスク</summary>

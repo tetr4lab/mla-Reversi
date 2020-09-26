@@ -66,6 +66,8 @@ namespace ReversiGame {
 		public bool WhiteEnable => Reversi.WhiteEnable;
 		/// <summary>ターンの差し手がある</summary>
 		public bool TurnEnable => Reversi.TurnEnable;
+		/// <summary>トレーニング中の可能性が高い</summary>
+		public bool IsTraining => blackAgent.IsTraning && whiteAgent.IsTraning;
 		/// <summary>人間対機械</summary>
 		public bool HumanVsMachine => BlackHuman != WhiteHuman;
 		/// <summary>人間がいる</summary>
@@ -220,7 +222,7 @@ namespace ReversiGame {
 			switch (State) {
 				case GameState.Reset: // リセット要求がある
 					Reversi.Reset ();
-					if (ForceChange && MachineOnly) { ChangeAgents (); }
+					if ((ForceChange && IsTraining) || MachineOnly) { ChangeAgents (); }
 					if (SomeHuman) { System.GC.Collect (); } // ガベージコレクト
 					board.RequestUpdate ();
 					Debug.Log ($"GameReseted black[{blackAgent.TeamId}]={(BlackHuman ? "human" : "machine")}, white[{whiteAgent.TeamId}]={(WhiteHuman ? "human" : "machine")}, step={Reversi.Step}, turn={(Reversi.IsBlackTurn ? "Black" : "White")}, status={Reversi.Score.Status}");
