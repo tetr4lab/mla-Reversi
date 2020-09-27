@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Unity.MLAgents.Policies;
 using ReversiLogic;
 
@@ -19,11 +20,18 @@ namespace ReversiGame {
 		/// <summary>プレハブ</summary>
 		private static GameObject prefab = null;
 
+		/// <summary>ゲームマスター</summary>
+		private static Game master = null;
+
+		/// <summary>直前のスクリーンサイズ</summary>
+		private static Vector2Int lastScreenSize;
+
 		/// <summary>生成</summary>
 		public static Game Create (Transform parent, Vector3 position, BehaviorType? blackAgentType = null, BehaviorType? whiteAgentType = null, bool forceChange = false) {
 			if (!prefab) { prefab = Resources.Load<GameObject> (prefabPath); }
 			if (!prefab) { throw new MissingComponentException ($"resources not found '{prefabPath}'"); }
 			var instance = Instantiate (prefab, position, Quaternion.identity, parent)?.GetComponent<Game> ();
+			if (!master && instance) { master = instance; }
 			instance?.initialize (blackAgentType, whiteAgentType, forceChange);
 			return instance;
 		}
@@ -31,6 +39,8 @@ namespace ReversiGame {
 		#endregion
 
 		#region Field and Accessor
+		/// <summary>ゲームマスターである</summary>
+		public bool IsMaster => master == this;
 		/// <summary>ゲーム状態</summary>
 		public GameState State {
 			get => state;
@@ -145,6 +155,9 @@ namespace ReversiGame {
 		/// <summary>白のエージェント</summary>
 		private ReversiAgent whiteAgent = null;
 
+		/// <summary>キャンバススケーラ</summary>
+		private CanvasScaler scaler = null;
+
 		#endregion
 
 		/// <summary>エージェントの検出</summary>
@@ -173,6 +186,7 @@ namespace ReversiGame {
 		private void initialize (BehaviorType? blackAgentType, BehaviorType? whiteAgentType, bool forceChange) {
 			transform.SetAsLastSibling ();
 			if (State == GameState.NotReady) {
+				scaler = GetComponentInParent<CanvasScaler> ();
 				detectAgents (blackAgentType, whiteAgentType);
 				ForceChange = forceChange;
 				Reversi = new Reversi ();
@@ -218,6 +232,10 @@ namespace ReversiGame {
 
 		/// <summary>駆動</summary>
 		private void Update () {
+			if (IsMaster && (lastScreenSize.x != Screen.width || lastScreenSize.y != Screen.height)) { // 画面サイズの変化を検出
+				lastScreenSize = new Vector2Int (Screen.width, Screen.height);
+				scaler.matchWidthOrHeight = (lastScreenSize.x > lastScreenSize.y) ? 1f : 0f;
+			}
 			if (TurnAgent) { return; } // 要求受付待機中
 			switch (State) {
 				case GameState.Reset: // リセット要求がある

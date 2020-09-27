@@ -65,7 +65,7 @@ namespace ReversiGame {
 				}
 			}
 			updateToggle.isOn = AllowUpdate = !game.MachineOnly;
-			updateToggle.gameObject.SetActive (game.MachineOnly);
+			updateToggle.gameObject.SetActive (game.IsMaster && game.MachineOnly);
 			hintToggle.isOn = AllowDisplayHint;
 			Debug.Log ("BoardObject intialized");
 			RequestUpdate ();
