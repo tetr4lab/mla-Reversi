@@ -16,19 +16,21 @@ namespace ReversiGame {
 
 		/// <summary>プレハブのパス</summary>
 		private const string prefabPath = "Prefabs/Board";
+		private const string labelPrefabPath = "Prefabs/Label";
 		/// <summary>盤面のマス数</summary>
 		private const int Size = ReversiLogic.Board.Size;
 		/// <summary>プレハブ</summary>
 		private static GameObject prefab = null;
-		/// <summary>縦のマス名</summary>
-		private static readonly string [] rowName = { "1", "2", "3", "4", "5", "6", "7", "8" };
-		/// <summary>横のマス名</summary>
-		private static readonly string [] colName = { "a", "b", "c", "d", "e", "f", "g", "h" };
+		private static GameObject labelPrefab = null;
+		/// <summary>マス名</summary>
+		private static string squareName ((int i, int j) pos) => $"{(char) ('a' + pos.j)}{(char) ('1' + pos.i)}";
 
 		/// <summary>生成</summary>
 		public static BoardObject Create (Transform parent, Game game) {
 			if (!prefab) { prefab = Resources.Load<GameObject> (prefabPath); }
 			if (!prefab) { throw new MissingComponentException ($"resources not found '{prefabPath}'"); }
+			if (!labelPrefab) { labelPrefab = Resources.Load<GameObject> (labelPrefabPath); }
+			if (!labelPrefab) { throw new MissingComponentException ($"resources not found '{labelPrefabPath}'"); }
 			var instance = Instantiate (prefab, parent)?.GetComponent<BoardObject> ();
 			instance?.initialize (parent, game);
 			return instance;
@@ -44,7 +46,9 @@ namespace ReversiGame {
 		[SerializeField, Tooltip ("手番表示体")] private Text turnText = default;
 		[SerializeField, Tooltip ("最終手表示体")] private Text lastMoveText = default;
 		[SerializeField, Tooltip ("手数表示体")] private Text stepText = default;
-		[SerializeField, Tooltip ("パスボタン")] private Button passButton = default;
+		[SerializeField, Tooltip ("棄権押釦")] private Button passButton = default;
+		[SerializeField, Tooltip ("行名札容器")] private Transform rowLabels = default;
+		[SerializeField, Tooltip ("列名札容器")] private Transform colLabels = default;
 
 		/// <summary>物理ゲーム</summary>
 		private Game game;
@@ -58,6 +62,10 @@ namespace ReversiGame {
 			transform.SetAsLastSibling ();
 			this.game = game;
 			squares = new List<SquareObject> { };
+			for (var j = 0; j < Size; j++) {
+				Instantiate (labelPrefab, rowLabels).GetComponent<Text> ().text = ((char) ('1' + j)).ToString ();
+				Instantiate (labelPrefab, colLabels).GetComponent<Text> ().text = ((char) ('a' + j)).ToString ();
+			}
 			for (var i = 0; i < Size * Size; i++) {
 				var square = SquareObject.Create (transform, game, i);
 				if (square) {
@@ -82,7 +90,7 @@ namespace ReversiGame {
 				var score = game.Score;
 				scoreText.text = game.HumanVsMachine ? $"{game.HumanScore} : {game.MachineScore}" : $"{score.Black} : {score.White}"; // スコア
 				turnText.text = (score.Status == Movability.End) ? "End" : game.IsBlackTurn ? "Black" : "White"; // ターン
-				lastMoveText.text = (game.LastMove.i < 0) ? "Pass" : ((game.Step == 0) ? "" : $"{colName [game.LastMove.j]}{rowName [game.LastMove.i]}"); // 最後の手
+				lastMoveText.text = (game.LastMove.i < 0) ? "Pass" : ((game.Step == 0) ? "" : squareName (game.LastMove)); // 最後の手
 				stepText.text = $"Move {game.Step}"; // ステップ
 				foreach (var square in squares) { square.RequestUpdate (); } // マス
 				passButton.gameObject.SetActive (game.HumanTurn && !game.IsEnd && !game.TurnEnable); // 人間が打てないときだけパスボタンを表示
