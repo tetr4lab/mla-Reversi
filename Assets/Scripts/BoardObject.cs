@@ -61,11 +61,11 @@ namespace ReversiGame {
 		private void initialize (Transform parent, Game game) {
 			transform.SetAsLastSibling ();
 			this.game = game;
-			squares = new List<SquareObject> { };
 			for (var j = 0; j < Size; j++) {
 				Instantiate (labelPrefab, rowLabels).GetComponent<Text> ().text = ((char) ('1' + j)).ToString ();
 				Instantiate (labelPrefab, colLabels).GetComponent<Text> ().text = ((char) ('a' + j)).ToString ();
 			}
+			squares = new List<SquareObject> { };
 			for (var i = 0; i < Size * Size; i++) {
 				var square = SquareObject.Create (transform, game, i);
 				if (square) {
