@@ -730,7 +730,6 @@ GameObject:
   - component: {fileID: 4268567972359506250}
   - component: {fileID: 8013507456997518584}
   - component: {fileID: 9212240837948174803}
-  - component: {fileID: 674663689531485938}
   m_Layer: 5
   m_Name: TotalScoreTitle
   m_TagString: Untagged
@@ -798,26 +797,6 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: TotalScoreTitle
---- !u!114 &674663689531485938
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1954847912782556640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreLayout: 1
-  m_MinWidth: -1
-  m_MinHeight: -1
-  m_PreferredWidth: -1
-  m_PreferredHeight: -1
-  m_FlexibleWidth: -1
-  m_FlexibleHeight: -1
-  m_LayoutPriority: 1
 --- !u!1 &2822337657579979794
 GameObject:
   m_ObjectHideFlags: 0
