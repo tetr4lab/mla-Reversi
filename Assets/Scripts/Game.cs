@@ -55,7 +55,7 @@ namespace ReversiGame {
 		/// <summary>ステップ</summary>
 		public int Step => Reversi.Step;
 		/// <summary>最後の手</summary>
-		public (int i, int j) LastMove => Reversi.LastMove;
+		public Move LastMove => Reversi.LastMove;
 		/// <summary>累積スコア</summary>
 		public Score ColorScore;
 		/// <summary>累積スコア</summary>
@@ -216,6 +216,12 @@ namespace ReversiGame {
 				Reversi.Move (index);
 				board.RequestUpdate ();
 			}
+		}
+
+		/// <summary>待った</summary>
+		public void RetractMove () {
+			Reversi.RetractMove ();
+			board.RequestUpdate ();
 		}
 
 		/// <summary>決定要求 (対人時は遅延実行)</summary>

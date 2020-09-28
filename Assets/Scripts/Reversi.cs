@@ -33,10 +33,10 @@ namespace ReversiLogic {
 	public class Reversi {
 
 		/// <summary>ターン番号</summary>
-		public int Step { get; private set; }
+		public int Step => board.Step;
 
 		/// <summary>最後の指し手</summary>
-		public (int i, int j) LastMove { get; private set; } = (-1, -1);
+		public Move LastMove => board.LastMove;
 
 		/// <summary>黒の手番</summary>
 		public bool IsBlackTurn { get; private set; }
@@ -78,10 +78,10 @@ namespace ReversiLogic {
 		public SquareStatus? SquareStatus (int i, int j) => board.GetSquareStatus (i, j);
 
 		/// <summary>コンストラクタ</summary>
-		public Reversi () { Step = 0; IsBlackTurn = true; board = new Board (); }
+		public Reversi () { IsBlackTurn = true; board = new Board (); }
 
 		/// <summary>再初期化</summary>
-		public void Reset () { Step = 0; IsBlackTurn = true; board.Reset (); }
+		public void Reset () { IsBlackTurn = true; board.Reset (); }
 
 		/// <summary>スコアと局面</summary>
 		public BoardScore Score => board.Score;
@@ -100,19 +100,21 @@ namespace ReversiLogic {
 		public void Move (int i, int j) {
 			if (i < 0 || i >= Board.Size || j < 0 || j >= Board.Size) { // ボード外
 				if (i == 0 && j == -1) { // パス
-					LastMove = (-1, -1);
-					Step++;
+					board.Move (i, j, IsBlackTurn);
 				} else {
 					throw new ArgumentOutOfRangeException ($"{(IsBlackTurn ? "black" : "white")} turn without a hand ({i}, {j})");
 				}
 			} else if (Enable (i, j)) {
-				board.Move (i, j, IsBlackTurn, Step + 1);
-				LastMove = (i, j);
-				Step++;
+				board.Move (i, j, IsBlackTurn);
 			} else { // 置けない場所に置こうとした
 				throw new InvalidOperationException ($"{(IsBlackTurn ? "black" : "white")} turn without a hand ({i}, {j}) {board.GetSquareStatus (i, j)}");
 			}
 			IsBlackTurn = !IsBlackTurn; // チェンジ
+		}
+
+		/// <summary>待った</summary>
+		public void RetractMove () {
+			board.RetractMove (IsBlackTurn);
 		}
 
 		/// <summary>文字列化</summary>
@@ -159,6 +161,15 @@ namespace ReversiLogic {
 
 		/// <summary>マスの行列</summary>
 		private Square [,] matrix;
+
+		/// <summary>差し手の記録</summary>
+		private List<Move> trace;
+
+		/// <summary>手数</summary>
+		public int Step => trace?.Count ?? 0;
+
+		/// <summary>最後の手</summary>
+		public Move LastMove => (trace?.Count > 0) ? trace [trace.Count - 1] : null;
 
 		/// <summary>更新未反映</summary>
 		private bool dirty;
@@ -281,30 +292,48 @@ namespace ReversiLogic {
 		}
 
 		/// <summary>石を置いて反映する</summary>
-		public void Move (int i, int j, bool black, int step) {
-			var square = this [i, j];
-			if (square.Status == SquareStatus.Empty) {
-				square.EnBlack (black, step);
-				scanReverse (i, j, -1, -1, black);
-				scanReverse (i, j, -1, 0, black);
-				scanReverse (i, j, -1, 1, black);
-				scanReverse (i, j, 0, -1, black);
-				scanReverse (i, j, 0, 0, black);
-				scanReverse (i, j, 0, 1, black);
-				scanReverse (i, j, 1, -1, black);
-				scanReverse (i, j, 1, 0, black);
-				scanReverse (i, j, 1, 1, black);
-				dirty = true;
+		public void Move (int i, int j, bool black, bool traceAdd = true) {
+			var pass = (i == 0 && j == -1);
+			if ((i >= 0 && i < Size && j >= 0 && j < Size) || pass) {
+				if (traceAdd) { trace.Add (new Move ((i, j), black)); }
+				if (!pass) {
+					var square = this [i, j];
+					if (square.Status == SquareStatus.Empty) {
+						square.EnBlack (black, Step);
+						scanReverse (i, j, -1, -1, black);
+						scanReverse (i, j, -1, 0, black);
+						scanReverse (i, j, -1, 1, black);
+						scanReverse (i, j, 0, -1, black);
+						scanReverse (i, j, 0, 0, black);
+						scanReverse (i, j, 0, 1, black);
+						scanReverse (i, j, 1, -1, black);
+						scanReverse (i, j, 1, 0, black);
+						scanReverse (i, j, 1, 1, black);
+						dirty = true;
+					}
+				}
 			}
 		}
 
 		/// <summary>石を置いて反映する</summary>
-		public void Move (int index, bool black, int step) {
-			Move (index / Size, index % Size, black, step);
+		public void Move (int index, bool black, bool traceAdd = true) => Move (index / Size, index % Size, black, traceAdd);
+
+		/// <summary>石を置いて反映する</summary>
+		public void Move (Move move, bool traceAdd = true) => Move (move.Position.i, move.Position.j, move.IsBlack, traceAdd);
+
+		/// <summary>待った</summary>
+		public void RetractMove (bool black) {
+			if (trace.Count > 0 && trace [trace.Count - 1].IsBlack == black) {
+				trace.RemoveAt (trace.Count - 1);
+			} else if (trace.Count > 1 && trace [trace.Count - 2].IsBlack == black) {
+				trace.RemoveRange (trace.Count - 2, 2);
+			} else return;
+			Reset (redo: true);
 		}
 
 		/// <summary>コンストラクタ</summary>
 		public Board () {
+			trace = new List<Move> { };
 			matrix = new Square [Size, Size];
 			for (var i = 0; i < Size; i++) {
 				for (var j = 0; j < Size; j++) {
@@ -317,8 +346,11 @@ namespace ReversiLogic {
 		}
 
 		/// <summary>初期配置</summary>
-		public void Reset (bool init = true) {
-			if (init) {
+		/// <param name="init">初期化</param>
+		/// <param name="redo">初期化後に再現を行う</param>
+		public void Reset (bool init = true, bool redo = false) {
+			if (init || redo) {
+				if (!redo) { trace.Clear (); } // 再現時はクリアしない
 				for (var i = 0; i < Size; i++) {
 					for (var j = 0; j < Size; j++) {
 						matrix [i, j].IsEmpty = true;
@@ -330,6 +362,11 @@ namespace ReversiLogic {
 			matrix [halfIndex, halfIndex + 1].EnBlack ();
 			matrix [halfIndex + 1, halfIndex].EnBlack ();
 			matrix [halfIndex + 1, halfIndex + 1].EnWhite ();
+			if (redo) { // 盤面の再現
+				foreach (var move in trace) {
+					Move (move, false);
+				}
+			}
 			dirty = true;
 		}
 
@@ -471,6 +508,38 @@ namespace ReversiLogic {
 		/// <summary>文字列化</summary>
 		public override string ToString () {
 			return IsBlack ? "●" : IsWhite ? "○" : "・";
+		}
+
+	}
+
+	/// <summary>手</summary>
+	public class Move {
+
+		/// <summary>手番</summary>
+		public bool IsBlack { get; private set; }
+
+		/// <summary>位置</summary>
+		public (int i, int j) Position { get; private set; }
+
+		/// <summary>位置</summary>
+		public int Index {
+			get => Position.i * Board.Size + Position.j;
+			private set => Position = (value / Board.Size, value % Board.Size);
+		}
+
+		/// <summary>コンストラクタ</summary>
+		public Move () { Position = (-1, -1); }
+
+		/// <summary>コンストラクタ</summary>
+		public Move ((int i, int j) position, bool isBlack) {
+			Position = position;
+			IsBlack = isBlack;
+		}
+
+		/// <summary>コンストラクタ</summary>
+		public Move (int index, bool isBlack) {
+			Index = index;
+			IsBlack = isBlack;
 		}
 
 	}

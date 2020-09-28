@@ -23,7 +23,7 @@ namespace ReversiGame {
 		private static GameObject prefab = null;
 		private static GameObject labelPrefab = null;
 		/// <summary>マス名</summary>
-		private static string squareName ((int i, int j) pos) => $"{(char) ('a' + pos.j)}{(char) ('1' + pos.i)}";
+		private static string squareName (Move move) => $"{(char) ('a' + move.Position.j)}{(char) ('1' + move.Position.i)}";
 
 		/// <summary>生成</summary>
 		public static BoardObject Create (Transform parent, Game game) {
@@ -48,6 +48,7 @@ namespace ReversiGame {
 		[SerializeField, Tooltip ("最終手表示体")] private Text lastMoveText = default;
 		[SerializeField, Tooltip ("手数表示体")] private Text stepText = default;
 		[SerializeField, Tooltip ("棄権押釦")] private Button passButton = default;
+		[SerializeField, Tooltip ("待押釦")] private Button retractButton = default;
 		[SerializeField, Tooltip ("行名札容器")] private Transform rowLabels = default;
 		[SerializeField, Tooltip ("列名札容器")] private Transform colLabels = default;
 
@@ -83,6 +84,7 @@ namespace ReversiGame {
 			}
 			updateToggle.isOn = AllowUpdate = !game.MachineOnly;
 			updateToggle.gameObject.SetActive (game.IsMaster && game.MachineOnly);
+			retractButton.gameObject.SetActive (false);
 			hintToggle.isOn = AllowDisplayHint;
 			allScore.SetActive (false);
 			allScores = allScore.GetComponentsInChildren<Text> ();
@@ -106,10 +108,11 @@ namespace ReversiGame {
 				var score = game.Score;
 				scoreText.text = game.HumanVsMachine ? $"{game.HumanScore} : {game.MachineScore}" : $"{score.Black} : {score.White}"; // スコア
 				turnText.text = (score.Status == Movability.End) ? "End" : game.IsBlackTurn ? "Black" : "White"; // ターン
-				lastMoveText.text = (game.LastMove.i < 0) ? "Pass" : ((game.Step == 0) ? "" : squareName (game.LastMove)); // 最後の手
+				lastMoveText.text = (game.Step == 0) ? "" : (game.LastMove.Index < 0) ? "Pass" : squareName (game.LastMove); // 最後の手
 				stepText.text = $"Move {game.Step}"; // ステップ
 				foreach (var square in squares) { square.RequestUpdate (); } // マス
 				passButton.gameObject.SetActive (game.HumanTurn && !game.IsEnd && !game.TurnEnable); // 人間が打てないときだけパスボタンを表示
+				retractButton.gameObject.SetActive (game.HumanTurn && game.Step > 1);
 			}
 		}
 
@@ -130,6 +133,11 @@ namespace ReversiGame {
 		/// <summary>パスボタンが押された</summary>
 		public void OnPressPassButton () {
 			if (game.HumanTurn && !game.TurnAgent) { game.Move (-1); }
+		}
+
+		/// <summary>待ったボタンが押された</summary>
+		public void OnPressRetractButton () {
+			if (game.HumanTurn && !game.TurnAgent) { game.RetractMove (); }
 		}
 
 	}
