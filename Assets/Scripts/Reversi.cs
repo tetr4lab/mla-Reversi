@@ -292,10 +292,10 @@ namespace ReversiLogic {
 		}
 
 		/// <summary>石を置いて反映する</summary>
-		public void Move (int i, int j, bool black, bool traceAdd = true) {
+		public void Move (int i, int j, bool black) {
 			var pass = (i == 0 && j == -1);
 			if ((i >= 0 && i < Size && j >= 0 && j < Size) || pass) {
-				if (traceAdd) { trace.Add (new Move ((i, j), black)); }
+				trace.Add (new Move ((i, j), black));
 				if (!pass) {
 					var square = this [i, j];
 					if (square.Status == SquareStatus.Empty) {
@@ -316,10 +316,10 @@ namespace ReversiLogic {
 		}
 
 		/// <summary>石を置いて反映する</summary>
-		public void Move (int index, bool black, bool traceAdd = true) => Move (index / Size, index % Size, black, traceAdd);
+		public void Move (int index, bool black) => Move (index / Size, index % Size, black);
 
 		/// <summary>石を置いて反映する</summary>
-		public void Move (Move move, bool traceAdd = true) => Move (move.Position.i, move.Position.j, move.IsBlack, traceAdd);
+		public void Move (Move move) => Move (move.Position.i, move.Position.j, move.IsBlack);
 
 		/// <summary>待った</summary>
 		public void RetractMove (bool black) {
@@ -349,8 +349,9 @@ namespace ReversiLogic {
 		/// <param name="init">初期化</param>
 		/// <param name="redo">初期化後に再現を行う</param>
 		public void Reset (bool init = true, bool redo = false) {
+			var _trace = trace;
 			if (init || redo) {
-				if (!redo) { trace.Clear (); } // 再現時はクリアしない
+				trace = new List<Move> { };
 				for (var i = 0; i < Size; i++) {
 					for (var j = 0; j < Size; j++) {
 						matrix [i, j].IsEmpty = true;
@@ -363,8 +364,8 @@ namespace ReversiLogic {
 			matrix [halfIndex + 1, halfIndex].EnBlack ();
 			matrix [halfIndex + 1, halfIndex + 1].EnWhite ();
 			if (redo) { // 盤面の再現
-				foreach (var move in trace) {
-					Move (move, false);
+				foreach (var move in _trace) {
+					Move (move);
 				}
 			}
 			dirty = true;

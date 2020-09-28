@@ -112,7 +112,7 @@ namespace ReversiGame {
 				stepText.text = $"Move {game.Step}"; // ステップ
 				foreach (var square in squares) { square.RequestUpdate (); } // マス
 				passButton.gameObject.SetActive (game.HumanTurn && !game.IsEnd && !game.TurnEnable); // 人間が打てないときだけパスボタンを表示
-				retractButton.gameObject.SetActive (game.HumanTurn && game.Step > 1);
+				retractButton.gameObject.SetActive (game.HumanTurn && !game.IsEnd && game.Step > 1); // 人間が戻せるときだけ待ったボタンを表示
 			}
 		}
 
