@@ -42,6 +42,7 @@ namespace ReversiGame {
 		[SerializeField, Tooltip ("助言表示許可切替")] private Toggle hintToggle = default;
 		[SerializeField, Tooltip ("総合得点表題表示体")] private Text totalScoreTitleText = default;
 		[SerializeField, Tooltip ("総合得点表示体")] private Text totalScoreText = default;
+		[SerializeField, Tooltip ("総合得点総表示体")] private GameObject allScore = default;
 		[SerializeField, Tooltip ("得点表示体")] private Text scoreText = default;
 		[SerializeField, Tooltip ("手番表示体")] private Text turnText = default;
 		[SerializeField, Tooltip ("最終手表示体")] private Text lastMoveText = default;
@@ -57,11 +58,16 @@ namespace ReversiGame {
 		/// <summary>マスの取得</summary>
 		public SquareObject this [int index] => squares [index];
 
+		/// <summary>総スコア表示体</summary>
+		private Text [] allScores;
+		/// <summary>盤面グリッド</summary>
+		private GridLayoutGroup grid;
+
 		/// <summary>初期化</summary>
 		private void initialize (Transform parent, Game game) {
 			transform.SetAsLastSibling ();
 			this.game = game;
-			var grid = GetComponent<GridLayoutGroup> ();
+			grid = GetComponentInChildren<GridLayoutGroup> ();
 			var rect = transform as RectTransform;
 			grid.cellSize = (rect.sizeDelta - grid.spacing) / (grid.constraintCount = Size) - grid.spacing; // 盤面の外形とマスの数から、折り返しとセルサイズを算出
 			for (var j = 0; j < Size; j++) {
@@ -70,7 +76,7 @@ namespace ReversiGame {
 			}
 			squares = new List<SquareObject> { };
 			for (var i = 0; i < Size * Size; i++) {
-				var square = SquareObject.Create (transform, game, i);
+				var square = SquareObject.Create (grid.transform, game, i);
 				if (square) {
 					squares.Add (square);
 				}
@@ -78,6 +84,8 @@ namespace ReversiGame {
 			updateToggle.isOn = AllowUpdate = !game.MachineOnly;
 			updateToggle.gameObject.SetActive (game.IsMaster && game.MachineOnly);
 			hintToggle.isOn = AllowDisplayHint;
+			allScore.SetActive (false);
+			allScores = allScore.GetComponentsInChildren<Text> ();
 			Debug.Log ("BoardObject intialized");
 			RequestUpdate ();
 		}
@@ -90,6 +98,11 @@ namespace ReversiGame {
 				totalScoreText.text = $"{totalScore.Black} : {totalScore.White} : {totalScore.Draw}"; // 累積スコア
 				totalScoreTitleText.text = totalScore.Title;
 				totalScoreText.gameObject.SetActive (totalScore != Score.Zero);
+				if (allScores != null) {
+					allScores [0].text = $"<size=18>{game.TeamScore.Title}</size>\n{game.TeamScore.Black} : {game.TeamScore.White} : {game.TeamScore.Draw}";
+					allScores [1].text = $"<size=18>{game.RaceScore.Title}</size>\n{game.RaceScore.Black} : {game.RaceScore.White} : {game.RaceScore.Draw}";
+					allScores [2].text = $"<size=18>{game.ColorScore.Title}</size>\n{game.ColorScore.Black} : {game.ColorScore.White} : {game.ColorScore.Draw}";
+				}
 				var score = game.Score;
 				scoreText.text = game.HumanVsMachine ? $"{game.HumanScore} : {game.MachineScore}" : $"{score.Black} : {score.White}"; // スコア
 				turnText.text = (score.Status == Movability.End) ? "End" : game.IsBlackTurn ? "Black" : "White"; // ターン
@@ -107,6 +120,11 @@ namespace ReversiGame {
 		public void OnChangeStepToggle () {
 			AllowDisplayHint = hintToggle.isOn;
 			RequestUpdate ();
+		}
+
+		/// <summary>総合得点総表示の切り替え</summary>
+		public void OnChangeAllScore () {
+			allScore.SetActive (!allScore.activeSelf);
 		}
 
 		/// <summary>パスボタンが押された</summary>
