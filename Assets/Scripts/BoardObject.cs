@@ -63,7 +63,7 @@ namespace ReversiGame {
 			this.game = game;
 			var grid = GetComponent<GridLayoutGroup> ();
 			var rect = transform as RectTransform;
-			grid.cellSize = (rect.sizeDelta - grid.spacing) / (grid.constraintCount = Size) - grid.spacing;
+			grid.cellSize = (rect.sizeDelta - grid.spacing) / (grid.constraintCount = Size) - grid.spacing; // 盤面の外形とマスの数から、折り返しとセルサイズを算出
 			for (var j = 0; j < Size; j++) {
 				Instantiate (labelPrefab, rowLabels).GetComponent<Text> ().text = ((char) ('1' + j)).ToString ();
 				Instantiate (labelPrefab, colLabels).GetComponent<Text> ().text = ((char) ('a' + j)).ToString ();
