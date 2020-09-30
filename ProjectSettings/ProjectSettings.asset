@@ -170,9 +170,9 @@ PlayerSettings:
   applicationIdentifier:
     Android: jp.nyanta.tetr4lab.aireversi
   buildNumber:
-    Standalone: 1
-    iPhone: 1
-  AndroidBundleVersionCode: 1
+    Standalone: 2
+    iPhone: 2
+  AndroidBundleVersionCode: 2
   AndroidMinSdkVersion: 19
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1
