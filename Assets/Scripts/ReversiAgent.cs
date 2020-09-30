@@ -40,7 +40,7 @@ namespace ReversiGame {
 		public bool ILoser => (TeamColor == Team.Black && reversi.WhiteWin) || (TeamColor == Team.White && reversi.BlackWin);
 
 		/// <summary>VectorAction Branch 0 Size</summary>
-		public bool Passable => Parameters.BrainParameters.VectorActionSize [0] > (Size * Size);
+		public bool Passable => Parameters.BrainParameters.VectorActionSize [0] > Size * Size;
 
 		/// <summary>挙動タイプ</summary>
 		public BehaviorType BehaviorType {
@@ -111,8 +111,9 @@ namespace ReversiGame {
 			Debug.Log ($"CollectObservations ({TeamColor}): step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.Status}");
 			var statuses = new float [Size * Size];
 			for (var i = 0; i < Size * Size; i++) {
-				//statuses [i] = (float) reversi [i].Status; // 正規化なし
-				statuses [i] = (float) reversi [i].Status / (float) SquareStatus.MaxValue; // 正規化あり
+				//statuses [i] = (float) reversi [i].Status; // 正規化なし、基本
+				statuses [i] = (float) reversi [i].Status / (float) SquareStatus.MaxValue; // 正規化あり、基本
+				//statuses [i] = (float) reversi.SquareStatus (i) / (float) SquareStatus.MaxValue; // 正規化あり、拡張
 			}
 			sensor.AddObservation (statuses);
 		}
@@ -146,17 +147,19 @@ namespace ReversiGame {
 				try {
 					if (game.TurnAgent != this) throw new AgentMismatchException (); // エージェントの不一致
 					if ((reversi.IsBlackTurn && TeamColor != Team.Black) || (reversi.IsWhiteTurn && TeamColor != Team.White)) throw new TeamMismatchException (); // 手番とチームの不整合
-					if (!reversi.Enable (index)) { throw new ArgumentOutOfRangeException (); } // 置けない場所
-					game.Move (index);
-					Debug.Log ($"Moved ({TeamColor}) [{index}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.Status}");
-					AddReward ((index < 0) ? -0.0006f : -0.0003f); // 継続報酬
+					if (reversi.Enable (index)) {
+						game.Move (index);
+						Debug.Log ($"Moved ({TeamColor}) [{index}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.Status}");
+						AddReward ((index < 0) ? -0.0006f : -0.0003f); // パス、通常
+					} else {
+						Debug.LogWarning ($"DisableMove ({TeamColor}) [{index}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.Status}\n{reversi}");
+						AddReward (-0.001f); // 置けない
+					}
 				} catch (AgentMismatchException) {
 					EndEpisode ();
 					Debug.LogError ($"Agent mismatch ({TeamColor}): Step={reversi.Step}, Turn={(reversi.IsBlackTurn ? "Black" : "White")}, Status={reversi.Score.Status}\n{reversi}");
-				} catch (ArgumentOutOfRangeException) {
-					EndEpisode ();
-					Debug.LogWarning ($"DisableMove ({TeamColor}) [{index}]: step={reversi.Step}, turn={(reversi.IsBlackTurn ? "Black" : "White")}, status={reversi.Score.Status}\n{reversi}");
 				} catch (TeamMismatchException) {
+					EndEpisode ();
 					Debug.LogWarning ($"Team mismatch ({TeamColor}): Step={reversi.Step}, Turn={(reversi.IsBlackTurn ? "Black" : "White")}, Status={reversi.Score.Status}\n{reversi}");
 				} finally {
 					game.TurnAgent = null; // 要求を抹消

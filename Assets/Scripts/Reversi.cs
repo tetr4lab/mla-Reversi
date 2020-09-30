@@ -11,6 +11,7 @@ namespace ReversiLogic {
 		public int Draw;
 		public int Human { get => Black; set => Black = value; }
 		public int Machine { get => White; set => White = value; }
+		public float FillingRate => (Black + White) / (Board.Size * Board.Size);
 		public Score () { Title = ""; Black = White = Draw = 0; }
 		public Score (int black, int white, int draw = 0) { Title = ""; Black = black; White = white; Draw = draw; }
 		public Score (string title, int black = 0, int white = 0, int draw = 0) { Title = title; Black = black; White = white; Draw = draw; }
@@ -138,6 +139,7 @@ namespace ReversiLogic {
 		public Movability Status;
 		public int Black { get => Score.Black; set => Score.Black = value; }
 		public int White { get => Score.White; set => Score.White = value; }
+		public float FillingRate => Score.FillingRate;
 		public BoardScore () { Score = new Score (); Status = 0; }
 		public BoardScore (int black, int white, Movability status) { Score = new Score (black, white); this.Status = status; }
 		public override string ToString () => $"({Black}, {White}, {Status})";
