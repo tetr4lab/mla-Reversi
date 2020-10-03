@@ -23,7 +23,7 @@ namespace ReversiGame {
 		private static GameObject prefab = null;
 		private static GameObject labelPrefab = null;
 		/// <summary>マス名</summary>
-		private static string squareName (Move move) => $"{(char) ('a' + move.Position.j)}{(char) ('1' + move.Position.i)}";
+		private static string squareName (Move move) => $"{(char) ('a' + move.Position.j)}{1 + move.Position.i}";
 
 		/// <summary>生成</summary>
 		public static BoardObject Create (Transform parent, Game game) {
@@ -71,7 +71,7 @@ namespace ReversiGame {
 			var rect = transform as RectTransform;
 			grid.cellSize = (rect.sizeDelta - grid.spacing) / (grid.constraintCount = Size) - grid.spacing; // 盤面の外形とマスの数から、折り返しとセルサイズを算出
 			for (var j = 0; j < Size; j++) {
-				Instantiate (labelPrefab, rowLabels).GetComponent<Text> ().text = ((char) ('1' + j)).ToString ();
+				Instantiate (labelPrefab, rowLabels).GetComponent<Text> ().text = (1 + j).ToString ();
 				Instantiate (labelPrefab, colLabels).GetComponent<Text> ().text = ((char) ('a' + j)).ToString ();
 			}
 			squares = new List<SquareObject> { };

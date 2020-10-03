@@ -252,6 +252,12 @@
 # 課題
 以下のような課題が生じ、対処しました。
 
+### トレーニング時にブレインに接続できない
+- Windows版の実行ファイルをビルドしてトレーニングする際に、'Instructions for updating: ~ non-resource variables are not supported in the long term'の後、`Connected to Unity environment`が出ず、`UnityEnvironment worker 0: environment stopping.`と出て終わってしまいます。
+
+#### 対処
+- ProjectSettings>Playerで、`ScriptingBackend`をデフォルトの`Mono`にしておけば接続できるようです。
+
 ### 脈略なく`OnEpisodeBegin ()`が呼ばれる
 - [学習サイクル](#%E5%AD%A6%E7%BF%92%E3%82%B5%E3%82%A4%E3%82%AF%E3%83%AB)の途中で、ML-Agentsのバックエンド側からの制御で`OnEpisodeBegin ()`が呼ばれる場合があります。
     - 既に`RequestDecision ()`が行われていると、過去のエピソードに対する`OnActionReceived ()`が呼ばれます。
