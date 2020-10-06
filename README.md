@@ -5,7 +5,7 @@
 # ‘O’ñ
 ### ŠÂ‹«
 - Unity 2019.4.11f1 (LTS)
-- ML Agents 1.3.0 (Preview)
+- ML Agents 1.4.0 (Preview)
 - ML Agents Extension 0.0.1 (Preview)
 - Anaconda Python 3.8
 - Windows 10
